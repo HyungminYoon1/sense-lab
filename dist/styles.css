@@ -278,7 +278,7 @@ h1 span {
 .control-panel > p:not(.eyebrow) {
   color: var(--muted);
   margin: 0 0 17px;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 .control-panel label {
   font-size: 0.875rem;
