@@ -9,6 +9,7 @@ Independent static GitHub Pages project. Browser-only HTML, CSS, ES modules and 
 - `dist/index.html`: semantic interface and public content.
 - `dist/styles.css`: tokens, layout, responsive and reduced-motion presentation.
 - `dist/src/model.js`: pure calculations; independently testable without a browser.
+- `dist/src/challenges.js`: pure color-round, reaction transition and result calculations. `hearing.js` owns bounded A/B audio playback and cancellation without microphone input.
 - `dist/src/app.js`: UI state and event orchestration. SENSE LAB additionally separates browser audio/canvas lifecycle in `experiments.js`.
 - `tools/`: localhost static preview and syntax/asset checks; never deployed.
 - `test/`: focused pure-model tests; never deployed.

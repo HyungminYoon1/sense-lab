@@ -1,5 +1,32 @@
 # Decision log
 
+## D08 — Sensory arcade and interpretation of scores (2026-10-08 redesign)
+
+- Context: owner approved a full redesign with color discrimination, reaction and high-frequency experiences, including failure for pre-signal clicking.
+- Options: arbitrary age/percentile labels; calibrated clinical testing with extra hardware/services; transparent local challenge results.
+- Decision: 12 HSL-lightness color rounds; five valid reaction trials summarized by median; nine 10–18 kHz A/B sine/silence pairs. Report observed responses only, not hearing age, diagnosis, color vision status, human percentile or normative ranking.
+- Rationale: consumer hardware/environment are uncalibrated; guessing can affect A/B results. Keep the experience interesting without invented personal assessments.
+- Affected: dist/index.html, styles.css, src/challenges.js, hearing.js, app.js, test/challenges.test.js, README.md.
+- Review: verify with real output hardware separately. References: ASHA adult screening and WHO safe listening; UI safety instructions remain brief. No personal input or persistent score data.
+
+## D09 — Timing and early-input lifecycle
+
+- Context: repeated clicks/held keys must not fabricate reaction records, and hidden tabs must not skew timing.
+- Options: score every input; accept only a waiting-to-signal-to-response state transition.
+- Decision: randomized 1.6–4.3 s waiting; pre-signal pointer/keyboard input fails the trial; waiting key repeat also fails. Failure/result requires an explicit separate retry control. Stop timers on navigation/blur/hidden/page exit; cancelled/failed trials do not count among five valid observations. Use monotonic browser time at the rendered signal frame.
+- Rationale: avoids click-spam restarting itself and excludes interrupted observations. This is input handling, not secure anti-bot protection; client code is inspectable.
+- Affected: src/app.js, challenges.js and tests.
+- Review: browser tests are automated timing, not evidence of a human reaction score. Physical display/input delays are not calibrated.
+
+## D10 — Short, cancellable audio
+
+- Context: high-frequency sound should be explicit, finite and non-overlapping.
+- Options: continuous sweep with rising volume; bounded sine bursts with silent comparison and user stop.
+- Decision: each A/B interval lasts 1.1 s, with a 0.6 s gap; a single sine burst has 35 ms attack and a finite release; peak app gain <=0.02. Reject frequencies at/above Nyquist, stop immediately on user cancellation/tab changes/hidden/page exit. No microphone, autoplay or gain escalation for missed tones. Existing waveform and particle experiments remain as bonuses.
+- Rationale: bounded listening and honest equipment limitations, with no added architecture or data collection.
+- Affected: src/hearing.js, experiments.js, app.js, index.html.
+- Review: app gain is not sound pressure level; low device volume and no volume escalation remain necessary. Hearing results are local response records only.
+
 ## D06 — Audio and exported visuals
 
 - Context: interactive audio and downloadable patterns should be deliberate and local.
@@ -9,15 +36,14 @@
 - Affected: dist/src/experiments.js, model.js, index.html.
 - Review: hardware listening volume is outside app control. Export results are user-owned local files; no remote copies or retention.
 
-+## D07 — Public commit identity
-+- Context: the existing global Git email is not a GitHub noreply address.
-+- Options: reuse it; change global settings; use repository-local GitHub noreply identity.
-+- Decision: configure only these new repositories with the verified account's GitHub noreply identity.
-+- Rationale: public commits should not expose a private email, and unrelated repositories must keep their settings.
-+- Affected: local .git/config (not tracked), public commit metadata.
-+- Review: owner may change the repo-local identity later; never print the pre-existing email.
+## D07 — Public commit identity
 
--
+- Context: the existing global Git email is not a GitHub noreply address.
+- Options: reuse it; change global settings; use repository-local GitHub noreply identity.
+- Decision: configure only these repositories with the verified account's GitHub noreply identity.
+- Rationale: public commits should not expose a private email, and unrelated repositories must keep their settings.
+- Affected: local .git/config (not tracked), public commit metadata.
+- Review: owner may change the repo-local identity later; never print the pre-existing email.
 
 2026-10-08. Authorized automated implementation session: two independent repositories, push and GitHub Pages deployment.
 

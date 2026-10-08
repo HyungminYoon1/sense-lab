@@ -64,7 +64,7 @@ function drawSound() {
   soundDraw.fillText("합성 파형 · 가로축은 상대적인 시간", 12, h - 14);
 }
 function updateSound() {
-  const frequency = clamp($("frequency").value, 80, 880),
+  const frequency = clamp($("frequency").value, 80, 2000),
     volume = clamp($("volume").value, 0, 20);
   $("frequency-output").value = frequency + " Hz";
   $("volume-output").value = volume + "%";
@@ -120,7 +120,7 @@ async function toggleSound() {
     oscillator = context.createOscillator();
     gain = context.createGain();
     oscillator.type = $("wave-type").value;
-    oscillator.frequency.value = clamp($("frequency").value, 80, 880);
+    oscillator.frequency.value = clamp($("frequency").value, 80, 2000);
     gain.gain.value = 0;
     gain.gain.setTargetAtTime(
       clamp($("volume").value, 0, 20) / 400,
