@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="색, 소리, 움직임을 직접 바꾸며 감각을 탐험하는 작은 브라우저 실험실."
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <meta name="theme-color" content="#fafbfe" />
+    <title>SENSE LAB — 감각의 실험실</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232348f5'/%3E%3Ccircle cx='12' cy='16' r='7' fill='%23fff'/%3E%3Ccircle cx='21' cy='16' r='7' fill='%23d4ff55'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./src/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#workspace">실험으로 바로가기</a>
+    <header class="topbar">
+      <a class="wordmark" href="./" aria-label="SENSE LAB 홈"
+        ><span class="brand-symbol" aria-hidden="true">◒</span> SENSE LAB<span
+          class="brand-period"
+          >.</span
+        ></a
+      >
+      <span class="header-note">작은 조작, 새로운 발견</span>
+      <a
+        class="text-link"
+        href="https://github.com/HyungminYoon1/sense-lab"
+        target="_blank"
+        rel="noopener noreferrer"
+        >소스 코드</a
+      >
+    </header>
+    <main id="workspace">
+      <div class="intro">
+        <div>
+          <p class="eyebrow">AN INTERACTIVE SENSORY PLAYGROUND</p>
+          <h1>당신의 감각을<br /><span>살짝 흔들어볼까요.</span></h1>
+        </div>
+        <p class="intro-note">
+          눈으로 보고, 귀로 듣고,<br />손끝으로 바꾸는 세 가지 실험.
+        </p>
+      </div>
+      <nav class="experiment-nav" aria-label="실험 선택">
+        <button
+          class="experiment-tab active"
+          data-tab="color"
+          aria-pressed="true"
+        >
+          <span class="tab-number">01</span
+          ><span>색의 상대성<small>COLOR</small></span
+          ><span class="tab-symbol" aria-hidden="true">◐</span>
+        </button>
+        <button class="experiment-tab" data-tab="sound" aria-pressed="false">
+          <span class="tab-number">02</span
+          ><span>눈으로 듣는 소리<small>SOUND</small></span
+          ><span class="tab-symbol" aria-hidden="true">∿</span>
+        </button>
+        <button class="experiment-tab" data-tab="motion" aria-pressed="false">
+          <span class="tab-number">03</span
+          ><span>움직임의 흔적<small>MOTION</small></span
+          ><span class="tab-symbol" aria-hidden="true">✳</span>
+        </button>
+      </nav>
+      <section
+        class="experiment-panel"
+        data-panel="color"
+        aria-labelledby="color-title"
+      >
+        <div class="stage color-stage">
+          <div class="stage-top">
+            <span>EXPERIMENT 01 / COLOR</span><span>같은 색, 다른 인상</span>
+          </div>
+          <div class="illusion" id="illusion">
+            <div class="surround surround-a" id="surround-a">
+              <div class="sample" aria-label="왼쪽 중앙색"></div>
+              <span>A</span>
+            </div>
+            <div class="surround surround-b" id="surround-b">
+              <div class="sample" aria-label="오른쪽 중앙색"></div>
+              <span>B</span>
+            </div>
+          </div>
+          <div class="stage-bottom">
+            <span class="color-answer" id="color-answer"
+              >두 정사각형의 색은 같을까요?</span
+            ><span class="stage-counter">01 / 03</span>
+          </div>
+        </div>
+        <aside class="control-panel">
+          <p class="eyebrow">LOOK CLOSER</p>
+          <h2 id="color-title">같은 색인데,<br />다르게 보이나요?</h2>
+          <p>
+            배경이 달라지면 중앙의 색도 다르게 느껴질 수 있습니다. 두 정사각형은
+            처음부터 같은 색입니다.
+          </p>
+          <button class="button primary" id="reveal-color" aria-pressed="false">
+            배경을 지워 비교하기
+          </button>
+          <label for="surround-range"
+            >배경 밝기 차이 <output id="surround-output">70%</output></label
+          >
+          <input
+            id="surround-range"
+            type="range"
+            min="0"
+            max="100"
+            value="70"
+          />
+          <label for="sample-color"
+            >중앙의 색 <output id="sample-output">#8A90FF</output></label
+          >
+          <input
+            id="sample-color"
+            type="color"
+            value="#8a90ff"
+            aria-label="중앙의 색 선택"
+          />
+          <button class="button secondary" id="reset-color">처음 상태로</button>
+          <div class="insight">
+            <span class="insight-mark" aria-hidden="true">i</span>
+            <p>
+              색은 홀로 보이지 않습니다. 주변의 색과 밝기가 우리가 느끼는 인상에
+              영향을 줍니다.
+            </p>
+          </div>
+        </aside>
+      </section>
+      <section
+        class="experiment-panel"
+        data-panel="sound"
+        aria-labelledby="sound-title"
+        hidden
+      >
+        <div class="stage sound-stage">
+          <div class="stage-top">
+            <span>EXPERIMENT 02 / SOUND</span
+            ><span id="sound-badge">소리 꺼짐</span>
+          </div>
+          <canvas
+            id="sound-canvas"
+            aria-label="선택한 소리의 파형 시각화"
+          ></canvas>
+          <div class="stage-bottom">
+            <span id="wave-caption">SINE WAVE · 220 Hz</span
+            ><span class="stage-counter">02 / 03</span>
+          </div>
+        </div>
+        <aside class="control-panel">
+          <p class="eyebrow">LISTEN WITH YOUR EYES</p>
+          <h2 id="sound-title">소리에도<br />모양이 있다면.</h2>
+          <p>
+            주파수와 파형을 바꿔 음높이와 음색을 비교해보세요. 파형은 합성
+            신호를 그린 모습입니다.
+          </p>
+          <button class="button primary" id="sound-toggle" aria-pressed="false">
+            소리 켜기
+          </button>
+          <label for="wave-type">파형</label
+          ><select id="wave-type">
+            <option value="sine">사인파 · 부드러운 소리</option>
+            <option value="triangle">삼각파 · 조금 더 선명한 소리</option>
+            <option value="square">사각파 · 전자적인 소리</option>
+          </select>
+          <label for="frequency"
+            >주파수 <output id="frequency-output">220 Hz</output></label
+          ><input
+            id="frequency"
+            type="range"
+            min="80"
+            max="880"
+            step="1"
+            value="220"
+          />
+          <label for="volume">음량 <output id="volume-output">8%</output></label
+          ><input id="volume" type="range" min="0" max="20" value="8" />
+          <p class="quiet-note" id="audio-message" role="status">
+            처음에는 기기 음량을 낮춰주세요. 실험을 벗어나면 소리가 꺼집니다.
+          </p>
+          <div class="insight">
+            <span class="insight-mark" aria-hidden="true">i</span>
+            <p>
+              주파수가 높아지면 더 높은 소리로 들립니다. 파형을 바꾸면 같은
+              주파수에서도 음색이 달라집니다.
+            </p>
+          </div>
+        </aside>
+      </section>
+      <section
+        class="experiment-panel"
+        data-panel="motion"
+        aria-labelledby="motion-title"
+        hidden
+      >
+        <div class="stage motion-stage">
+          <div class="stage-top">
+            <span>EXPERIMENT 03 / MOTION</span
+            ><span>포인터를 따라 흐르는 점들</span>
+          </div>
+          <canvas
+            id="motion-canvas"
+            tabindex="0"
+            aria-label="입자 실험. 마우스나 터치로 움직이고, 방향키로 중심을 이동할 수 있습니다."
+          ></canvas>
+          <div class="stage-bottom">
+            <span id="motion-caption">ATTRACT · 360 PARTICLES</span
+            ><span class="stage-counter">03 / 03</span>
+          </div>
+        </div>
+        <aside class="control-panel">
+          <p class="eyebrow">LEAVE A TRACE</p>
+          <h2 id="motion-title">당신의 움직임이<br />하나의 패턴으로.</h2>
+          <p>
+            점들을 끌어당기거나 밀어내보세요. 마우스·터치·방향키로 중심을 움직일
+            수 있습니다.
+          </p>
+          <label for="force-mode">움직임</label
+          ><select id="force-mode">
+            <option value="attract">끌어당기기</option>
+            <option value="repel">밀어내기</option>
+          </select>
+          <label for="density"
+            >점의 개수 <output id="density-output">360</output></label
+          ><input
+            id="density"
+            type="range"
+            min="100"
+            max="700"
+            step="20"
+            value="360"
+          />
+          <label for="trail"
+            >잔상의 길이 <output id="trail-output">70%</output></label
+          ><input id="trail" type="range" min="0" max="95" value="70" />
+          <div class="button-pair">
+            <button
+              class="button secondary"
+              id="motion-pause"
+              aria-pressed="false"
+            >
+              일시정지</button
+            ><button class="button secondary" id="motion-reset">
+              다시 그리기
+            </button>
+          </div>
+          <button class="button primary" id="motion-save">
+            현재 화면 PNG 저장
+          </button>
+          <p class="quiet-note" id="export-message" role="status">
+            그림은 이 기기에만 저장됩니다. 물리 현상을 정밀하게 재현한 실험은
+            아닙니다.
+          </p>
+        </aside>
+      </section>
+      <div class="bottom-note">
+        <span class="mini-mark" aria-hidden="true">◒</span>
+        <p>정답을 찾기보다, 달라지는 순간을 관찰해보세요.</p>
+        <span>PLAY. NOTICE. REPEAT.</span>
+      </div>
+      <details class="about">
+        <summary>실험의 원리와 이 사이트에 관하여</summary>
+        <p>
+          색 실험은 동시 대비를 관찰하는 간단한 예입니다. 인상은 화면·주변
+          조명·개인에 따라 다릅니다. 소리는 브라우저에서 합성하며, 움직임 실험은
+          시각적 패턴을 위한 그래픽 모델입니다.
+        </p>
+        <p>
+          계정, 분석 도구, 외부 API를 사용하지 않습니다. 입력과 실험 상태는
+          페이지를 닫으면 사라집니다. GitHub의 호스팅 서비스 자체 로그는
+          별개입니다. AI 에이전트의 도움을 받아 제작한 학습용 프로젝트입니다.
+        </p>
+        <p>
+          <a
+            href="https://developer.mozilla.org/ko/docs/Web/API/Web_Audio_API"
+            target="_blank"
+            rel="noopener noreferrer"
+            >MDN · Web Audio API</a
+          >
+          ·
+          <a
+            href="https://developer.mozilla.org/ko/docs/Web/API/Canvas_API"
+            target="_blank"
+            rel="noopener noreferrer"
+            >MDN · Canvas API</a
+          >
+        </p>
+      </details>
+    </main>
+    <footer>
+      <span>SENSE LAB · 브라우저 속 작은 실험실</span
+      ><span>NO SIGN-UP. JUST CURIOSITY.</span>
+    </footer>
+    <noscript
+      ><p class="noscript">이 실험은 JavaScript를 켜야 동작합니다.</p></noscript
+    >
+  </body>
+</html>
