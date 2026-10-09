@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="얼마나 비슷한 색을 구분할 수 있나요? 색감, 반응속도, 고주파 청취를 직접 플레이하는 감각 아케이드."
+      content="색 구분, 반응 시간, 위치 순서 기억 게임과 고주파 A/B 청취."
     />
     <meta
       http-equiv="Content-Security-Policy"
@@ -57,8 +57,7 @@
       <section data-panel="color" aria-labelledby="color-title">
         <div class="section-title">
           <div>
-            <p class="eyebrow">HOW CLOSE CAN YOU GET?</p>
-            <h1 id="color-title">하나만 다른 색, 눈에 들어오나요?</h1>
+            <h1 id="color-title">다른 색 한 칸 찾기</h1>
           </div>
           <span class="big-index" aria-hidden="true">01</span>
         </div>
@@ -82,13 +81,13 @@
             </div>
           </div>
           <aside class="score-sheet">
-            <p class="eyebrow">YOUR EYES, YOUR SCORE</p>
+            <p class="eyebrow">정답 수</p>
             <div class="score-number">
               <strong id="color-score">0</strong><span>/ 12</span>
             </div>
             <p id="color-description">
               두 번 연속 맞히면 두 단계 어렵게, 틀리면 한 단계 쉽게 갑니다.
-              밝거나 어두운 한 칸을 찾아보세요. 매번 색과 위치가 바뀝니다.
+              색과 위치는 매번 바뀝니다.
             </p>
             <ol
               id="color-history"
@@ -97,12 +96,10 @@
             ></ol>
             <div id="color-result" class="result-note" role="status" hidden></div>
             <button id="color-restart" class="button outline">
-              새로운 색으로 다시 하기
+              새 테스트
             </button>
             <p class="fine-print">
-              ΔL은 HSL 밝기 차이입니다. 화면 밝기와 주변 조명을 일정하게
-              유지해보세요. 최대 6×6 · ΔL 0.35%. 작은 차이는 화면에서 같은
-              색으로 반올림될 수 있습니다. 보정된 색차나 색각 검사가 아닙니다.
+              ΔL은 HSL 밝기 설정 차이입니다. 작은 차이는 화면에서 같은 색으로 보일 수 있습니다.
             </p>
           </aside>
         </div>
@@ -144,12 +141,17 @@
             </div>
           </div>
         </details>
+        <section class="personal-history" aria-labelledby="color-records-title">
+          <h2 id="color-records-title" tabindex="-1">색감 기록</h2>
+          <p id="color-trend"></p>
+          <p class="fine-print">기록에서 회차별 단계·밝기 차이·정오답을 확인할 수 있습니다.</p>
+          <div id="color-saved" class="saved-runs"></div>
+        </section>
       </section>
       <section data-panel="reaction" aria-labelledby="reaction-title" hidden>
         <div class="section-title">
           <div>
-            <p class="eyebrow">WAIT FOR IT.</p>
-            <h1 id="reaction-title">생각보다 먼저,<br />손이 움직이는 순간.</h1>
+            <h1 id="reaction-title">신호에 반응하기</h1>
           </div>
           <span class="big-index" aria-hidden="true">02</span>
         </div>
@@ -176,34 +178,35 @@
             </div>
           </div>
           <aside class="score-sheet">
-            <p class="eyebrow">FIVE CLEAN SHOTS</p>
+            <p class="eyebrow">중앙값</p>
             <div class="score-number">
               <strong id="reaction-score">—</strong><span>ms</span>
             </div>
             <p id="reaction-caption">기록 0 / 5 · 조기 클릭 0회</p>
             <ol id="reaction-history" class="reaction-history"></ol>
             <p class="result-note" id="reaction-result">
-              신호 전 입력·키 유지·연타·100 ms 미만 응답은 제외합니다.
-              3초 안에 한 번만 반응하고 입력 확인이 끝날 때까지 기다리세요.
-              최대 15번 시도 안에 정상 기록 5회를 모읍니다.
+              신호 전 입력·유지·연타·100 ms 미만·3초 초과 응답은 제외합니다.
+              정상 기록 5회, 최대 15시도. 반응 뒤 250 ms 동안 추가 입력을 하지 마세요.
             </p>
             <button id="reaction-restart" class="button outline">
-              기록 초기화
+              새 테스트
             </button>
             <p class="fine-print">
-              결과는 5회 중앙값·중앙값에서의 편차(MAD)·범위입니다.
-              100 ms는 게임의 예측 입력 제외 규칙이며 사람의 능력 한계가
-              아닙니다. 같은 기기·입력 방식으로 비교해보세요. 클라이언트의
-              입력 검사이며 보안 수준의 부정행위 방지는 아닙니다.
+              MAD는 중앙값에서 떨어진 거리의 중앙값입니다. 작은 MAD는 이번 응답 시간들이 비슷했다는 뜻입니다.
             </p>
           </aside>
         </div>
+        <section class="personal-history" aria-labelledby="reaction-records-title">
+          <h2 id="reaction-records-title" tabindex="-1">반응 기록</h2>
+          <p id="reaction-trend"></p>
+          <p class="fine-print">정상 5회 기록끼리 비교합니다. 5회 미달 기록도 펼쳐볼 수 있습니다. 화면·입력 기기의 지연이 포함되므로 같은 기기와 입력 방식으로 비교하세요.</p>
+          <div id="reaction-saved" class="saved-runs"></div>
+        </section>
       </section>
       <section data-panel="sound" aria-labelledby="hearing-title" hidden>
         <div class="section-title">
           <div>
-            <p class="eyebrow">BEYOND THE EVERYDAY.</p>
-            <h1 id="hearing-title">당신은 어디까지<br />들을 수 있나요?</h1>
+            <h1 id="hearing-title">소리가 있는 구간 고르기</h1>
           </div>
           <span class="big-index" aria-hidden="true">03</span>
         </div>
@@ -243,7 +246,7 @@
             </div>
           </div>
           <aside class="score-sheet">
-            <p class="eyebrow">LISTEN, DON'T GUESS.</p>
+            <p class="eyebrow">구간 선택 일치</p>
             <div class="score-number">
               <strong id="hearing-score">0</strong><span>/ 9</span>
             </div>
@@ -262,7 +265,7 @@
               value="3"
             />
             <p class="listening-note">
-              기기 음량을 낮춰주세요.<br />안 들려도 음량을 올리지 마세요.
+              기기 음량을 낮추세요.<br />안 들려도 음량을 올리지 마세요. 불편하면 즉시 중단하세요.
             </p>
             <div id="hearing-result" class="result-note" hidden></div>
             <button id="hearing-restart" class="button outline">
@@ -298,7 +301,7 @@
                 >음량 <output id="volume-output">8%</output></label
               ><input id="volume" type="range" min="0" max="20" value="8" />
               <p id="audio-message" class="fine-print" role="status">
-                기기 음량을 낮춰주세요.
+                기기 음량을 낮추세요. 불편하면 소리를 끄세요.
               </p>
             </div>
           </div>
@@ -307,8 +310,7 @@
       <section data-panel="motion" aria-labelledby="motion-title" hidden>
         <div class="section-title">
           <div>
-            <p class="eyebrow">MAKE SOMETHING MOVE.</p>
-            <h1 id="motion-title">움직임을 남기면,<br />당신만의 패턴.</h1>
+            <h1 id="motion-title">입자 패턴</h1>
           </div>
           <span class="big-index" aria-hidden="true">04</span>
         </div>
@@ -325,13 +327,12 @@
             ></canvas>
             <div class="arena-bottom">
               <span id="export-message" role="status"
-                >마음에 드는 순간을 PNG로 저장하세요.</span
+                >현재 화면을 PNG로 저장</span
               ><button id="motion-save" class="small-button">PNG 저장</button>
             </div>
           </div>
           <aside class="score-sheet lab-controls">
-            <p class="eyebrow">YOUR LITTLE UNIVERSE</p>
-            <h2>끌어당기거나,<br />멀리 밀어내거나.</h2>
+            <h2>패턴 설정</h2>
             <label for="force-mode">움직임</label
             ><select id="force-mode">
               <option value="attract">끌어당기기</option>
@@ -364,8 +365,7 @@
       <section data-panel="memory" aria-labelledby="memory-title" hidden>
         <div class="section-title">
           <div>
-            <p class="eyebrow">HOLD THE ORDER.</p>
-            <h1 id="memory-title">사라진 위치,<br />순서까지 기억하나요?</h1>
+            <h1 id="memory-title">위치를 순서대로 기억하기</h1>
           </div>
           <span class="big-index" aria-hidden="true">05</span>
         </div>
@@ -374,11 +374,11 @@
             <div class="arena-top"><span id="memory-round">ROUND 1 / 8</span><span>3 → 7칸</span></div>
             <div id="memory-grid" class="memory-grid" aria-label="4행 4열 위치 순서 게임"></div>
             <div class="arena-bottom">
-              <span id="memory-status" role="status" aria-atomic="true">순서 보기 버튼으로 시작하세요. 위치를 보여준 뒤 같은 순서로 누릅니다.</span>
+              <span id="memory-status" role="status" aria-atomic="true">순서 보기를 누른 뒤 위치를 같은 순서로 선택하세요.</span>
             </div>
           </div>
           <aside class="score-sheet">
-            <p class="eyebrow">PLACE, THEN ORDER.</p>
+            <p class="eyebrow">순서 일치</p>
             <div class="score-number"><strong id="memory-score">0</strong><span>/ 8</span></div>
             <p>한 번에 한 위치가 표시됩니다. 끝나면 본 순서대로 누르세요.
               위치는 매번 새로 뽑고 한 순서 안에서는 중복되지 않습니다.</p>
@@ -391,12 +391,18 @@
             <button id="memory-start" class="button">순서 보기</button>
             <button id="memory-stop" class="button outline" disabled>이번 순서 중단</button>
             <div id="memory-result" class="result-note" role="status" hidden></div>
-            <button id="memory-restart" class="button outline">새 순서로 초기화</button>
+            <button id="memory-restart" class="button outline">새 테스트</button>
             <p class="fine-print">보기 중에는 입력을 받지 않습니다. 응답 시간 제한은 없으며
               Tab으로 이동하고 Space·Enter로 선택할 수 있습니다. 위치 번호도
-              상태 안내로 읽어줍니다. 속도를 바꾸려면 초기화하세요. 기억력 진단이 아닙니다.</p>
+              상태 안내로 읽어줍니다. 속도를 바꾸려면 새 테스트를 시작하세요.</p>
           </aside>
         </div>
+        <section class="personal-history" aria-labelledby="memory-records-title">
+          <h2 id="memory-records-title" tabindex="-1">순서 기억 기록</h2>
+          <p id="memory-trend"></p>
+          <p class="fine-print">같은 보기 속도끼리 최근 정답 수를 비교합니다. 기록을 펼치면 순서 길이별 결과를 볼 수 있습니다.</p>
+          <div id="memory-saved" class="saved-runs"></div>
+        </section>
       </section>
       <div class="session-strip">
         <span>이번 세션</span
@@ -405,21 +411,24 @@
         ><span>청취 <strong id="session-hearing">—</strong></span>
         <span>순서 <strong id="session-memory">—</strong></span>
       </div>
+      <section class="history-controls" aria-labelledby="history-title">
+        <h2 id="history-title">저장 기록</h2>
+        <p>색감·반응·순서 기억은 테스트별 최근 20회를 이 브라우저에 저장합니다.
+          중도에 끝낸 테스트와 청취·패턴은 저장하지 않습니다. 반응은 최대 15시도까지 마친 기록을 저장합니다.</p>
+        <p class="fine-print">갤러리에는 완료한 테스트 종류 수(최대 3)만 공유합니다.
+          같은 사이트 출처의 앱은 브라우저 저장 공간에 접근할 수 있습니다. 공용 기기에서는 사용 후 기록을 삭제하세요.</p>
+        <button id="history-clear-all" class="small-button outline">전체 기록 삭제</button>
+        <p id="history-status" role="status" aria-atomic="true"></p>
+      </section>
       <details class="about">
         <summary>테스트 원리와 참고 자료</summary>
         <p>
-          색감 테스트는 응답에 따라 HSL 밝기 차이가 달라지는 시각 게임이며 색각 진단이
-          아닙니다. 고주파 챌린지는 사인파가 나오는 A/B 구간을 고르는
-          체험입니다. 정답을 우연히 고를 수 있고, 이어폰·스피커가 고주파를
-          재생하지 못할 수도 있어 청력 나이나 의학적 청력 검사 결과로 환산하지
-          않습니다. 반응속도는 화면 신호에서 입력까지의 브라우저 시간을 측정하며
-          디스플레이·입력 지연을 포함합니다. 위치 순서 기억은 3–7개 위치의
-          순서를 재현하는 게임으로 임상 기억력 검사나 백분위가 아닙니다.
+          색감·반응·순서 기억은 게임 기록이며 의학적 진단이 아닙니다.
+          반응의 100 ms는 예측 입력 제외 규칙입니다.
+          청취는 A/B 응답만 표시합니다. 우연히 맞힐 수 있고 기기가 고주파를 재생하지 못할 수도 있어 청력 나이나 가청 한계를 계산하지 않습니다.
         </p>
         <p>
-          결과와 설정은 페이지 메모리에만 남습니다. 로그인·분석 도구·마이크·외부
-          API를 사용하지 않습니다. GitHub 호스팅 로그는 별개입니다. AI
-          에이전트와 함께 제작한 프로젝트입니다.
+          저장 기록을 서버로 전송하지 않습니다.
         </p>
         <p>
           <a
@@ -447,7 +456,7 @@
     </main>
     <footer>
       <span>SENSE LAB / 감각 아케이드</span
-      ><span>PLAY IT. FEEL IT. TRY AGAIN.</span>
+      ><a href="https://hyungminyoon1.github.io/web-lab/">갤러리</a>
     </footer>
     <noscript>이 테스트를 플레이하려면 JavaScript를 켜주세요.</noscript>
   </body>

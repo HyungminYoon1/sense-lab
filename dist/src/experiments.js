@@ -134,11 +134,11 @@ async function toggleSound() {
     $("sound-toggle").setAttribute("aria-pressed", "true");
     $("sound-badge").textContent = "소리 켜짐";
     $("audio-message").textContent =
-      "기기의 실제 음량을 낮게 유지해주세요. 실험을 벗어나면 소리가 꺼집니다.";
+      "기기 음량을 낮추세요. 화면을 옮기면 소리가 꺼집니다.";
   } catch {
     stopSound();
     $("audio-message").textContent =
-      "소리를 시작하지 못했습니다. 기기 설정을 확인한 뒤 다시 시도해주세요.";
+      "소리를 시작하지 못했습니다. 기기 설정을 확인하세요.";
   } finally {
     starting = false;
     $("sound-toggle").disabled = false;
@@ -276,7 +276,7 @@ $("motion-save").addEventListener("click", () => {
   motionCanvas.toBlob((blob) => {
     if (!blob) {
       $("export-message").textContent =
-        "이미지를 저장하지 못했습니다. 다시 시도해주세요.";
+        "이미지를 저장하지 못했습니다. 다시 시도하세요.";
       return;
     }
     const url = URL.createObjectURL(blob),
@@ -288,7 +288,7 @@ $("motion-save").addEventListener("click", () => {
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
     $("export-message").textContent =
-      "PNG 다운로드를 요청했습니다. 브라우저의 다운로드 목록을 확인해주세요.";
+      "PNG 다운로드 요청 완료 · 다운로드 목록을 확인하세요.";
   }, "image/png");
 });
 new ResizeObserver(() => {

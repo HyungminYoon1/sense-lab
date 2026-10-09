@@ -372,6 +372,56 @@ button:disabled {
   display: block;
   margin-bottom: 5px;
 }
+.personal-history,
+.history-controls {
+  border-top: 1px solid var(--line);
+  padding: 22px 0;
+  margin-top: 24px;
+  min-width: 0;
+}
+.personal-history h2,
+.history-controls h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+.personal-history p,
+.history-controls p {
+  font-size: 0.875rem;
+  margin: 8px 0 14px;
+}
+.saved-runs {
+  display: grid;
+  gap: 12px;
+}
+.saved-run {
+  display: flex;
+  align-items: start;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 14px;
+  background: white;
+  font-size: 0.875rem;
+}
+.saved-run details {
+  flex: 1;
+  min-width: 0;
+}
+.saved-run summary {
+  padding: 10px 0;
+  min-height: 44px;
+}
+.saved-run button {
+  flex-shrink: 0;
+}
+.saved-rounds {
+  padding-left: 24px;
+  columns: 2;
+}
+.saved-rounds li {
+  break-inside: avoid;
+  padding: 4px 0;
+}
 .bonus,
 .about {
   padding: 20px 0;
@@ -723,6 +773,17 @@ footer {
   }
 }
 @media (max-width: 650px) {
+  .saved-run {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .saved-run details,
+  .saved-run button {
+    width: 100%;
+  }
+  .saved-rounds {
+    columns: 1;
+  }
   .wordmark sup {
     display: none;
   }

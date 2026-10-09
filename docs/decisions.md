@@ -1,5 +1,34 @@
 # Decision log
 
+## D14 — Bounded personal test history (2026-10-09, LOCAL ONLY)
+
+- Context: owner explicitly authorizes personal per-round history, trends, clear-one/all privacy controls and bounded local persistence. This supersedes D02's ban on persistent results and the corresponding memory-only statements in D08/D11/D12/D13; active seeds, raw input and audio still remain ephemeral.
+- Options: memory-only results; unlimited records or remote profiles; a strict finite device-local versioned payload.
+- Decision: `sense-lab-history-v1`, version 1, 20 terminal runs per color/reaction/memory test, 65,536-character maximum. Persist actual completion timestamps, random record IDs and minimal rounds. Color records all 12 correctness/level/delta observations after Result; memory all eight correctness/length observations plus 850/1,500 ms pace; reaction terminal five-valid or 15-attempt outcomes with settled integer times in 100–3,000 ms. Interrupted tests do not persist; terminal exhausted reaction tests do, visibly incomplete. Hearing and pattern data stay ephemeral.
+- Rationale: per-round review is meaningful without storing random answers, sequences, raw events, seeds, names or inferred health. No time expiry; adding the 21st record evicts the oldest inserted record for that test. Individual/all delete is explicit; new-test resets preserve history. Compare color paths as observations only, reaction medians only between five-valid runs, memory hit counts only at the same viewing pace; show recent five values and previous difference, not population rank or diagnosis.
+- Mechanics: pure validation/summaries in history.js, injected storage in history-store.js, DOM/clock/UUID orchestration in history-view.js and app.js. Validate exact fields/version/date/UUID/round bounds, replay the deterministic color staircase for consistency, reject duplicate IDs and unsupported versions. Corrupt records require explicit deletion; no silent migration/repair/overwrite. Catch getter, quota, readback and deletion failures; keep active play usable. Fresh reads precede writes; storage events update other tabs. Two keys and simultaneous tabs are not transactional.
+- Affected files: dist/src/history.js, history-store.js, history-view.js, app.js, index.html, styles.css, test/history.test.js, ui.test.js, architecture.md, README.md, docs/verification.md.
+- Review: main owns real browser/mobile/keyboard QA and screenshots. Validate persistence on same-origin reload, record deletion and blocked storage. No local storage is private from same-origin scripts; notify visitors, especially on shared devices. No public ranking/backend/account access is authorized for this service.
+
+## D15 — Minimal gallery completion summary (2026-10-09, LOCAL ONLY)
+
+- Context: approved cross-app contract permits the gallery to read a minimal local completion badge; other service repositories are outside this worker's edit scope.
+- Options: expose private round payloads; count views/runs; report independently completed test kinds from confirmed durable history.
+- Decision: `web-lab-progress-v1` strict `{version:1,apps:{repoId:{completed,total,updatedAt}}}`; exact allowlist of data-mirage, echo-vault, light-route, logic-foundry, neon-tactics, orbit-courier, packet-journey, parcel-panic, pixel-kitchen, pocket-city, route-race, sense-lab, swarm-garden, think-forge, traffic-lab. Max 15 entries, 8,192 serialized characters, integer `0 <= completed <= total <= 1000`. The helper mutates only sense-lab with total 3. Count one retained complete color, five-valid reaction and full memory test per kind, independent of score or repeats. Use the latest actual retained achievement time. No write on initial view, hint, example, partial run or exhausted-only reaction. No seed/action/name/file payload in this key.
+- Rationale: badges represent completed tests rather than ability, visits, repeated runs or invented dates. Same-origin Pages apps can share localStorage, but the gallery contract reads aggregate only; this is not a browser access-control barrier.
+- Mechanics: read-modify-write, validate every shared entry, retain other allowlisted entries unchanged, readback verification. Recompute after confirmed private save and individual delete. If no achievements remain, remove own entry; full delete removes own entry independently even if private deletion fails. Never clear the entire browser store. If the aggregate becomes empty, remove its key. Corrupt/unsupported shared state fails closed and is not repaired by destroying other entries. Private write and aggregate write can fail independently; surface that distinction.
+- Affected files: dist/src/progress.js, history-view.js, test/history.test.js, ui.test.js, architecture.md, README.md, docs/verification.md.
+- Review: main must compare helper allowlist/contract across services and verify gallery badge pickup at the same origin. Localhost port origins are separate; no badge appears across different ports. No web-lab changes or backend provisioning here.
+
+## D16 — Concise public wording (2026-10-09, LOCAL ONLY)
+
+- Context: owner authorizes removing marketing, repeated/defensive and AI-sounding filler across apps.
+- Options: remove all explanation; retain existing slogans; keep concrete objectives, rules, units, controls, score interpretation and necessary safety/privacy/provenance.
+- Decision: replace question/slogan headings with task names, label scores directly, shorten feedback and export messages, use distinct New test and Delete record labels. Keep one brief medical/measurement-limit explanation in references, local retention/sharing/deletion disclosure, low device volume/no escalation/discomfort stop guidance, explicit audio controls and brief AI provenance.
+- Rationale: controls and honest interpretation remain discoverable without promotional or repeated disclaimers. Randomization, legal play, early-input rejection and audio generation/cancellation are unchanged.
+- Affected files: dist/index.html, src/app.js, src/experiments.js, styles.css, README.md.
+- Review: existing model/privacy/audio tests remain in place. Main owns browser readability, native keyboard access and 320/390 px layout QA.
+
 ## D11 — Adaptive randomized color difficulty (2026-10-09, LOCAL ONLY)
 
 - Context: owner authorized a local difficulty/originality upgrade; D08's fixed color progression makes repeated attempts predictable.

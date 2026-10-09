@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { HISTORY_KEY } from "../dist/src/history.js";
+import { PROGRESS_KEY } from "../dist/src/progress.js";
 
 // This small DOM/clock double exercises the real app event wiring. It is not
 // browser, rendering, screen-reader or physical input evidence.
@@ -68,6 +70,12 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
   for (const id of ["reaction-symbol", "reaction-message", "reaction-instruction"])
     ids.get("reaction-zone").append(ids.get(id));
   const document = new Element(), window = new Element();
+  const storage = new Map();
+  window.localStorage = {
+    getItem: (key) => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, value),
+    removeItem: (key) => storage.delete(key),
+  };
   document.getElementById = (id) => { assert.ok(ids.has(id), `Missing UI ID ${id}`); return ids.get(id); };
   document.createElement = (tag) => new Element(tag);
   document.createTextNode = (text) => Object.assign(new Element(), { textContent: text });
@@ -111,6 +119,8 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     install("requestAnimationFrame", (callback) => { const id = ++serial; frames.set(id, callback); return id; });
     install("cancelAnimationFrame", (id) => frames.delete(id));
     await import("../dist/src/app.js");
+    assert.equal(storage.has(HISTORY_KEY), false);
+    assert.equal(storage.has(PROGRESS_KEY), false);
     const oddColor = () => ids.get("color-grid").children.findIndex((tile, _, tiles) =>
       tiles.filter((other) => other.style["--tile"] === tile.style["--tile"]).length === 1);
     for (let i = 0; i < 12; i++) {
@@ -121,6 +131,10 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     }
     assert.equal(ids.get("color-grid").children.length, 36);
     assert.equal(ids.get("session-color").textContent, "12/12");
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.color.length, 1);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 1);
+    click("color-next");
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.color.length, 1);
     click("color-restart");
     emit(ids.get("color-grid").children[(oddColor() + 1) % 16], "click");
     click("color-next");
@@ -141,6 +155,7 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     emit(zone, "keydown", { key: "Enter" }); emit(zone, "keyup", { key: "Enter" });
     tick(300); assert.equal(phase(), "invalid");
     assert.equal(ids.get("reaction-history").children.length, 0);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 0);
     click("reaction-next"); pointer(); go(); tick(200);
     emit(ids.get("reaction-caption"), "click"); assert.equal(phase(), "invalid");
     click("reaction-next"); pointer(); go(); tick(3001); assert.equal(phase(), "invalid");
@@ -164,6 +179,9 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     assert.equal(phase(), "complete");
     assert.equal(ids.get("reaction-score").textContent, 210);
     assert.match(ids.get("reaction-result").textContent, /MAD\) 5 ms/);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 1);
+    assert.deepEqual(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction[0].rounds.map((r) => r.elapsed), [200, 205, 210, 215, 2900]);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 2);
     pointer(); assert.equal(ids.get("reaction-history").children.length, 5);
     click("reaction-restart"); pointer(); go(); tick(200); pointer();
     window.listeners.find((l) => l.name === "blur").callback(); tick(500);
@@ -173,6 +191,9 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     for (let i = 0; i < 15; i++) { pointer(); pointer(); if (i < 14) click("reaction-next"); }
     assert.equal(phase(), "exhausted");
     assert.equal(ids.get("reaction-next").hidden, true);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 2);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction[1].rounds.length, 15);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 2);
 
     emit(tabs.find((t) => t.dataset.tab === "memory"), "click");
     click("memory-start"); tick(500);
@@ -182,6 +203,7 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     tick(20000);
     assert.ok(ids.get("memory-grid").children.every((c) => c.disabled));
     assert.equal(ids.get("memory-progress").textContent.startsWith("0 / 8"), true);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.memory.length, 0);
     document.hidden = false;
     click("memory-start");
     const sequence = [];
@@ -210,6 +232,47 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     }
     assert.equal(ids.get("memory-score").textContent, 7);
     assert.equal(ids.get("session-memory").textContent, "7/8");
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.memory.length, 1);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 3);
+    assert.equal(ids.get("memory-saved").children.length, 1);
+    assert.match(ids.get("memory-trend").textContent, /보통 보기끼리 비교/);
+    // Remove just the completed reaction record; the exhausted record remains.
+    const completedReactionDelete = ids.get("reaction-saved").children[1].children[1];
+    emit(completedReactionDelete, "click");
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 1);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 2);
+    assert.equal(document.activeElement, ids.get("reaction-records-title"));
+    const progress = JSON.parse(storage.get(PROGRESS_KEY));
+    progress.apps["packet-journey"] = { completed: 1, total: 7, updatedAt: "2026-10-09T10:00:00.000Z" };
+    storage.set(PROGRESS_KEY, JSON.stringify(progress));
+    storage.set("unrelated", "preserve");
+    click("history-clear-all");
+    assert.equal(storage.has(HISTORY_KEY), false);
+    assert.deepEqual(Object.keys(JSON.parse(storage.get(PROGRESS_KEY)).apps), ["packet-journey"]);
+    assert.equal(storage.get("unrelated"), "preserve");
+    assert.equal(ids.get("color-saved").children.length, 0);
+    assert.equal(ids.get("memory-saved").children.length, 0);
+    click("color-next"); click("memory-start");
+    assert.equal(storage.has(HISTORY_KEY), false);
+    // Quota failure preserves gameplay and must not fabricate a gallery badge.
+    window.localStorage.setItem = () => { throw new Error("quota"); };
+    click("color-restart");
+    for (let i = 0; i < 12; i++) {
+      emit(ids.get("color-grid").children[oddColor()], "click");
+      click("color-next");
+    }
+    assert.equal(ids.get("session-color").textContent, "12/12");
+    assert.equal(storage.has(HISTORY_KEY), false);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"], undefined);
+    assert.match(ids.get("history-status").textContent, /저장하거나 삭제하지 못했습니다/);
+    window.localStorage.setItem = (key, value) => storage.set(key, value);
+    storage.set(HISTORY_KEY, "{invalid");
+    window.listeners.find((l) => l.name === "storage").callback({ key: HISTORY_KEY });
+    assert.match(ids.get("history-status").textContent, /형식을 읽을 수 없습니다/);
+    assert.equal(storage.get(HISTORY_KEY), "{invalid");
+    click("history-clear-all");
+    assert.equal(storage.has(HISTORY_KEY), false);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["packet-journey"].completed, 1);
     assert.equal(ids.get("memory-start").disabled, true);
     assert.match(ids.get("memory-result").textContent, /최대 7칸/);
     click("memory-start"); // Even scripted activation cannot run a ninth round.
