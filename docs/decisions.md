@@ -1,5 +1,32 @@
 # Decision log
 
+## D11 — Adaptive randomized color difficulty (2026-10-09, LOCAL ONLY)
+
+- Context: owner authorized a local difficulty/originality upgrade; D08's fixed color progression makes repeated attempts predictable.
+- Options: fixed increasingly tiny deltas; clinically calibrated color-space thresholds; bounded response-dependent game stages.
+- Decision: supersede the fixed-color part of D08 with 12 trials starting at level 4, two consecutive hits advancing two levels and one miss dropping one level. Clamp to 12 levels, ΔL 14–0.35%, 4×4/5×5/6×6 grids. Randomize hue, saturation, base lightness, target position and target polarity. Inject seeded random functions into pure models; generate fresh seeds in UI memory only.
+- Rationale: rewards consistent correct responses, allows recovery from errors and reaches harder stages within a finite session. Two-level jumps are a game rule, not a psychophysical threshold estimator. Report actual answered deltas; do not infer ΔE, diagnostic status or comparable ability from different adaptive paths. Very small deltas may quantize on consumer displays.
+- Affected files: dist/src/challenges.js, app.js, index.html, styles.css, test/challenges.test.js, ui.test.js, architecture.md, README.md.
+- Review: main agent owns browser/preview QA, including hard-grid touch target layout and focus. No persistent seed, remote write, external asset or changed hosting boundary.
+
+## D12 — Provisional reaction responses and finite sessions (2026-10-09)
+
+- Context: D09 needs stronger handling of held input, mixed input methods and signal-time spam while preserving honest local results.
+- Options: accept the first signal-time event immediately; server-side anti-cheat; a bounded local state machine and response quarantine.
+- Decision: extend D09 with held pointer/key tracking, pre-signal event timestamp rejection, repeat/multi-pointer/outside-input exclusion, a 100–3,000 ms game acceptance window and 250 ms provisional phase. Any extra activation in that phase invalidates the attempt. At most five valid records and 15 total attempts; cancellations consume a started attempt. Show median, median absolute deviation and range without deleting valid outliers. Require a distinct retry control. UI owns events/clock/cancellation; pure models own transitions and calculations.
+- Rationale: stops common input bursts from becoming records and prevents an unbounded retry session. 100 ms is an explicit game policy, not a physiological assertion. Keyboard/pointer and assistive button activation are supported; script tampering remains possible. Results include device/display and event-loop timing limitations.
+- Affected files: dist/src/challenges.js, app.js, index.html, styles.css, test/challenges.test.js, ui.test.js, README.md.
+- Review: physical devices, native synthesized click differences and screen-reader interaction require browser/device QA. Audio safety, app network policy and memory-only storage remain as documented; no backend or security anti-bot guarantee.
+
+## D13 — Spatial order memory challenge (2026-10-09)
+
+- Context: owner allowed a distinct perception/memory game within the existing static model/UI architecture.
+- Options: another color variant; rapid animation; numbered spatial sequence recall with deliberate start/stop.
+- Decision: add a fifth panel, eight rounds of 3–7 unique positions on a 4×4 grid. Shuffle in the pure model, show one position at a time with a 350 ms gap, provide 850/1,500 ms viewing options, then allow untimed ordered answers. Stop on user action, panel switch, blur, visibility/page exit and cancel without scoring; resumed rounds get a fresh sequence. Reveal order after a hit/miss and require explicit next-round action.
+- Rationale: exercises order retention rather than color discrimination or reaction time. Native buttons, visible numbers, shape/contrast highlighting, status announcements and deliberate focus support multiple input paths. No microphone, audio, remote assets, retention or diagnostic result is added.
+- Affected files: dist/src/challenges.js, app.js, index.html, styles.css, test/challenges.test.js, ui.test.js, architecture.md, README.md.
+- Review: announce positions for accessibility, but screen-reader queue speed and reduced-motion rendering still need real-browser QA. Different viewing modes are game settings, not interchangeable standardized scores. Main owns browser QA; this worker performs Node/static/test-double checks only.
+
 ## D08 — Sensory arcade and interpretation of scores (2026-10-08 redesign)
 
 - Context: owner approved a full redesign with color discrimination, reaction and high-frequency experiences, including failure for pre-signal clicking.

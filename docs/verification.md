@@ -1,5 +1,17 @@
 # 검증 기록
 
+## 2026-10-09 난이도·순서 기억 개선 — LOCAL / TEST_DOUBLE ONLY
+
+- 범위: 이 저장소의 로컬 구현만 수정. commit/push/deploy/원격 변경·backend/Neon·새 에이전트·외부 자산 사용 없음. 아래 2026-10-08 REMOTE_CI/LIVE 기록은 이전 버전의 역사이며 이번 변경의 증거가 아닙니다.
+- SOURCE VERIFIED: architecture.md, README.md, docs/decisions.md, .gitattributes, package.json, 기존 dist/index.html·styles.css·src 5개 모듈, test 3개 파일, tools 2개 파일 및 docs/verification.md를 편집 전에 전체 확인했습니다. 저장소 파일 목록과 Git 상태도 확인했으며 시작 시 작업 트리는 깨끗했습니다. node_modules는 목록 대상에서 제외했고 의존 패키지 내부를 검사하지 않았습니다.
+- LOCAL: Node.js v22.23.2, 변경 전 `npm test` 14/14 및 `npm run check` 통과. 변경 후 `npm test` 21/21 및 `npm run check` 통과. 색 12단계·양방향 색상·무작위 입력 경계, 계단 난이도/상한 도달, 고정 시드 재현, 반응 중앙값/MAD/범위·100/3,000 ms 경계·타이밍 이상 입력, 기억 순서·무시되는 비활성 입력·유한 범위를 확인했습니다.
+- TEST_DOUBLE: 실제 app.js 이벤트를 작은 DOM/시계 더블에 연결해 신호까지 유지한 포인터, 대기 중 연타, 50 ms 입력, 신호 뒤 반복 키, 응답 뒤 포인터+Enter 혼합 연타, 영역 밖 보조 버튼 활성화·추가 포인터·시간 초과·신호 전 시각으로 큐에 들어온 이벤트를 제외함을 확인했습니다. 마우스 Pointer Events/키보드/보조 기술 click 경로의 유효 5회 집계·추가 입력 무시, 물리 포인터의 뒤따르는 일반 click 중복 무시, MAD 5 ms의 합성 사례, 입력 확인 중 blur 취소 및 15회 종료를 확인했습니다. 이 경로는 실제 터치/보조 기술의 브라우저 구현 증거가 아닙니다.
+- TEST_DOUBLE: 색 12라운드 전부 정답 경로의 6×6 도달·12/12 종료·오답 후 단계 감소·focus 호출을 확인했습니다. 자동화는 코드의 색 설정을 비교하므로 사람의 색각 증거가 아닙니다. 위치 순서 표시 중 숨김은 타이머와 라운드를 취소하고 기록을 남기지 않습니다. 재시작 후 합성 3칸 순서 일치, 추가 클릭으로 중복 점수가 생기지 않음과 첫 응답 칸으로의 focus 호출, 8라운드의 1회 오답·7/8 완료·최대 7칸 일치·9번째 라운드 차단을 확인했습니다.
+- STATIC: HTML ID 고유성, label/설명 참조, 네이티브 버튼 및 상태 안내 연결을 확인했습니다. 정적 자산 경로/JavaScript 문법 검사 통과. 시각 대비·실제 focus·스크린리더 안내 속도·모바일 레이아웃을 증명하지 않습니다.
+- AUDIO TEST_DOUBLE: 기존 10–18 kHz 범위, 18 kHz sine gain <=0.02, stop 취소 및 잘못된 설정 거부 테스트가 그대로 통과했습니다. hearing.js와 experiments.js의 오디오 구현은 수정하지 않았습니다.
+- FORMAT: 변경한 텍스트 10개 파일은 UTF-8 without BOM / CRLF로 확인했습니다. `git diff --check` 통과.
+- NOT_RUN: 이 작업자의 실제 브라우저/preview QA, 실제 터치·키보드·스크린리더·기기 청취/음압, 물리 입력 지연·의학적 검증·REMOTE_CI·LIVE. 메인 에이전트가 로컬 브라우저와 preview를 확인할 예정이며, 그 확인 전에는 새 UI가 실제 브라우저에서 검증됐다고 주장하지 않습니다.
+
 ## 2026-10-08 개편 — LOCAL / TEST_DOUBLE
 
 - Node.js 순수 계산·기존 모델·오디오 제어 테스트 14/14, 정적 자산·문법 검사 통과.

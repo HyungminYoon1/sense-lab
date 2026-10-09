@@ -2,13 +2,23 @@ import { surroundLightness } from "./model.js";
 import { selectExperiment, stopSound } from "./experiments.js";
 import {
   makeColorRound,
-  COLOR_DELTAS,
+  COLOR_ROUNDS,
+  colorStep,
+  seededRandom,
   reactionInput,
-  median,
+  reactionSignal,
+  settleReaction,
+  reactionDelay,
+  reactionSummary,
+  REACTION_RULES,
+  makeMemoryRound,
+  memoryInput,
+  MEMORY_LENGTHS,
   HEARING_FREQUENCIES,
 } from "./challenges.js";
 import { playPair, stopPair } from "./hearing.js";
 const $ = (id) => document.getElementById(id);
+const attemptRandom = () => seededRandom(crypto.getRandomValues(new Uint32Array(1))[0]);
 let active = "color",
   reveal = false;
 function renderIllusion() {
@@ -43,11 +53,13 @@ $("reset-color").addEventListener("click", () => {
   renderIllusion();
 });
 let colorRound = 0,
+  colorStaircase = { level: 3, streak: 0 },
+  colorRandom = attemptRandom(),
   colorBoard,
   colorAnswered = false,
   colorResults = [];
 function renderColorRound() {
-  colorBoard = makeColorRound(colorRound);
+  colorBoard = makeColorRound(colorStaircase.level, colorRandom);
   colorAnswered = false;
   $("color-grid").style.setProperty("--columns", colorBoard.columns);
   $("color-grid").replaceChildren(
@@ -55,27 +67,27 @@ function renderColorRound() {
       const button = document.createElement("button");
       button.className = "color-tile";
       button.style.setProperty("--tile", color);
-      button.setAttribute("aria-label", `칸 ${index + 1}`);
+      button.setAttribute("aria-label", `${Math.floor(index / colorBoard.columns) + 1}행 ${index % colorBoard.columns + 1}열, 칸 ${index + 1}`);
       button.addEventListener("click", () => answerColor(index));
       return button;
     }),
   );
   $("color-round").textContent =
     `ROUND ${String(colorRound + 1).padStart(2, "0")} / 12`;
-  $("color-difference").textContent = `ΔL ${colorBoard.delta}%`;
+  $("color-difference").textContent = `단계 ${colorBoard.level + 1} · ${colorBoard.columns}×${colorBoard.columns} · ΔL ${colorBoard.delta}%`;
   $("color-feedback").textContent = "색이 다른 한 칸을 선택하세요.";
   $("color-next").disabled = true;
   $("color-next").textContent = colorRound === 11 ? "결과 보기" : "다음 색";
   $("color-result").hidden = true;
   $("color-history").replaceChildren(
-    ...COLOR_DELTAS.map((_, i) => {
+    ...Array.from({ length: COLOR_ROUNDS }, (_, i) => {
       const li = document.createElement("li");
       li.textContent = String(i + 1).padStart(2, "0");
       li.className =
-        colorResults[i] === undefined ? "" : colorResults[i] ? "hit" : "miss";
+        colorResults[i] === undefined ? "" : colorResults[i].correct ? "hit" : "miss";
       li.setAttribute(
         "aria-label",
-        `${i + 1}번: ${colorResults[i] === undefined ? "미진행" : colorResults[i] ? "정답" : "오답"}`,
+        `${i + 1}번: ${colorResults[i] === undefined ? "미진행" : colorResults[i].correct ? "정답" : "오답"}`,
       );
       return li;
     }),
@@ -85,7 +97,8 @@ function answerColor(index) {
   if (colorAnswered) return;
   colorAnswered = true;
   const correct = index === colorBoard.odd;
-  colorResults.push(correct);
+  colorResults.push({ correct, delta: colorBoard.delta, level: colorBoard.level });
+  colorStaircase = colorStep(colorStaircase, correct);
   [...$("color-grid").children].forEach((button, i) => {
     button.disabled = true;
     if (i === colorBoard.odd) {
@@ -102,9 +115,9 @@ function answerColor(index) {
     }
   });
   $("color-feedback").textContent = correct
-    ? `정답! 밝기 차이 ${colorBoard.delta}%를 구분했습니다.`
-    : `정답은 ${colorBoard.odd + 1}번 칸입니다. 밝기 차이 ${colorBoard.delta}%.`;
-  $("color-score").textContent = colorResults.filter(Boolean).length;
+    ? `정답! ΔL ${colorBoard.delta}%. ${colorStaircase.streak ? "한 번 더 맞히면 두 단계 올라갑니다." : "다음은 더 작은 차이에 도전합니다."}`
+    : `정답은 ${colorBoard.odd + 1}번 칸 · ΔL ${colorBoard.delta}%. 다음은 한 단계 쉽게 갑니다.`;
+  $("color-score").textContent = colorResults.filter((r) => r.correct).length;
   const li = $("color-history").children[colorRound];
   li.className = correct ? "hit" : "miss";
   li.setAttribute(
@@ -112,35 +125,54 @@ function answerColor(index) {
     `${colorRound + 1}번: ${correct ? "정답" : "오답"}`,
   );
   $("color-next").disabled = false;
+  $("color-next").focus({ preventScroll: true });
 }
 $("color-next").addEventListener("click", () => {
   if (!colorAnswered) return;
   if (colorRound < 11) {
     colorRound++;
     renderColorRound();
+    $("color-grid").firstElementChild.focus({ preventScroll: true });
     return;
   }
-  const count = colorResults.filter(Boolean).length,
-    deltas = COLOR_DELTAS.filter((_, i) => colorResults[i]);
+  const hits = colorResults.filter((r) => r.correct), count = hits.length,
+    deltas = hits.map((r) => r.delta);
   $("color-result").hidden = false;
   $("color-result").textContent =
-    `12개 중 ${count}개 정답. ${deltas.length ? `이번에 구분한 가장 작은 밝기 차이는 ${Math.min(...deltas)}%입니다.` : "다른 색으로 다시 도전해보세요."}`;
+    `12개 중 ${count}개 정답. ${deltas.length ? `정답을 고른 가장 작은 설정 차이는 ΔL ${Math.min(...deltas)}%입니다.` : "다른 색으로 다시 도전해보세요."} 경로가 응답에 따라 달라져 정답 수만으로 다른 시도를 비교할 수 없습니다. 한 번의 정답은 색각 한계나 보정된 지각 문턱을 뜻하지 않습니다.`;
   $("color-feedback").textContent =
     "12라운드 완료! 새로운 색으로 다시 도전할 수 있습니다.";
   $("color-next").disabled = true;
   $("session-color").textContent = `${count}/12`;
+  $("color-restart").focus({ preventScroll: true });
 });
 $("color-restart").addEventListener("click", () => {
   colorRound = 0;
   colorResults = [];
+  colorStaircase = { level: 3, streak: 0 };
+  colorRandom = attemptRandom();
+  $("session-color").textContent = "—";
   $("color-score").textContent = "0";
   renderColorRound();
+  $("color-grid").firstElementChild.focus({ preventScroll: true });
 });
 let reaction = { phase: "ready" },
   reactionTimer = 0,
   reactionFrame = 0,
   reactionTimes = [],
-  early = 0;
+  early = 0,
+  excluded = 0,
+  attempts = 0,
+  reactionRandom = attemptRandom();
+const heldPointers = new Set(), heldKeys = new Set();
+const liveReaction = () => ["waiting", "go", "settling"].includes(reaction.phase);
+const invalidReasons = {
+  held: "키나 포인터를 놓은 뒤 한 번만 반응하세요.",
+  spam: "응답 뒤 250 ms 안에 추가 입력이 있어 연타로 제외했습니다.",
+  anticipation: "100 ms 미만 응답은 이 게임에서 예측 입력으로 제외합니다.",
+  timeout: "신호 뒤 3초가 지나 이번 시도를 제외했습니다.",
+  outside: "테스트 영역 밖의 입력 또는 추가 포인터 입력이 있어 제외했습니다.",
+};
 function clearReactionClock() {
   clearTimeout(reactionTimer);
   cancelAnimationFrame(reactionFrame);
@@ -148,6 +180,7 @@ function clearReactionClock() {
   reactionFrame = 0;
 }
 function renderReaction() {
+  const summary = reactionSummary(reactionTimes);
   const states = {
     ready: ["+", "시작하기", "초록색과 ‘지금!’ 신호가 나타나면 클릭하세요."],
     waiting: ["…", "기다리세요", "신호 전에 누르면 실패입니다."],
@@ -158,11 +191,14 @@ function renderReaction() {
       "신호 전 입력입니다. 다음 시도에서 다시 기다려보세요.",
     ],
     result: ["✓", `${reaction.elapsed} ms`, "다음 시도 버튼으로 계속하세요."],
+    settling: ["…", "입력 확인 중", "250 ms 동안 추가 입력 없이 기다려주세요."],
+    invalid: ["×", "기록 제외", invalidReasons[reaction.reason]],
     complete: [
       "✓",
-      `${Math.round(median(reactionTimes) || 0)} ms`,
+      `${Math.round(summary.median)} ms`,
       "5회 기록의 중앙값입니다.",
     ],
+    exhausted: ["Ⅱ", "이번 세션 종료", "15회 안에 정상 기록 5회를 모으지 못했습니다. 초기화 후 다시 도전하세요."],
     cancelled: [
       "Ⅱ",
       "시도 중단",
@@ -174,16 +210,16 @@ function renderReaction() {
   $("reaction-symbol").textContent = symbol;
   $("reaction-message").textContent = message;
   $("reaction-instruction").textContent = instruction;
-  $("reaction-next").hidden = !["false-start", "result", "cancelled"].includes(
+  $("reaction-next").hidden = !["false-start", "invalid", "result", "cancelled"].includes(
     reaction.phase,
   );
   $("reaction-next").textContent =
     reaction.phase === "result" ? "다음 시도" : "다시 시도";
   $("reaction-score").textContent = reactionTimes.length
-    ? Math.round(median(reactionTimes))
+    ? Math.round(summary.median)
     : "—";
   $("reaction-caption").textContent =
-    `기록 ${reactionTimes.length} / 5 · 조기 클릭 ${early}회`;
+    `기록 ${reactionTimes.length} / 5 · 시도 ${attempts} / 15 · 조기 입력 ${early}회 · 기타 제외 ${excluded}회`;
   $("reaction-status").textContent = message + " · " + instruction;
   $("reaction-history").replaceChildren(
     ...reactionTimes.map((value) =>
@@ -192,15 +228,26 @@ function renderReaction() {
       }),
     ),
   );
-  if (reaction.phase === "complete") {
+  if (["complete", "exhausted"].includes(reaction.phase)) {
     $("reaction-result").textContent =
-      `최고 기록 ${Math.min(...reactionTimes)} ms · 중앙값 ${Math.round(median(reactionTimes))} ms · 조기 클릭 ${early}회. 실패한 시도는 기록에서 제외했습니다.`;
+      summary.count ? `${summary.count}/5회 · 중앙값 ${Math.round(summary.median)} ms · 중앙값에서의 편차(MAD) ${Math.round(summary.mad)} ms · 범위 ${summary.best}–${summary.worst} ms. 조기 입력 ${early}회 · 기타 제외 ${excluded}회. ${summary.count < 5 ? "5회 미달로 참고 기록만 표시합니다." : "작은 편차는 이번 기록들이 비슷했다는 뜻입니다."}` : "정상 기록이 없습니다. 초기화 후 신호를 기다려주세요.";
     $("session-reaction").textContent =
-      `${Math.round(median(reactionTimes))} ms`;
+      summary.count === 5 ? `${Math.round(summary.median)} ms` : "미완료";
   }
 }
-function startReaction() {
+function finishReaction() {
   clearReactionClock();
+  if (reaction.phase === "false-start") early++;
+  if (["invalid", "cancelled"].includes(reaction.phase)) excluded++;
+  if (reaction.phase === "result") reactionTimes.push(reaction.elapsed);
+  if (reactionTimes.length === REACTION_RULES.trials) reaction = { phase: "complete" };
+  else if (attempts >= REACTION_RULES.attempts) reaction = { phase: "exhausted" };
+  renderReaction();
+}
+function startReaction() {
+  if (attempts >= REACTION_RULES.attempts || active !== "reaction") return;
+  clearReactionClock();
+  attempts++;
   reaction = { phase: "waiting" };
   renderReaction();
   reactionTimer = setTimeout(
@@ -218,63 +265,96 @@ function startReaction() {
           active !== "reaction"
         )
           return;
-        reaction = { phase: "go", signalAt: performance.now() };
+        reaction = reactionSignal(reaction, performance.now(), heldPointers.size > 0 || heldKeys.size > 0);
+        if (reaction.phase === "invalid") {
+          finishReaction();
+          return;
+        }
         renderReaction();
+        reactionTimer = setTimeout(() => {
+          if (reaction.phase !== "go") return;
+          reaction = { phase: "invalid", reason: "timeout" };
+          finishReaction();
+        }, REACTION_RULES.maximum + 1);
       });
     },
-    1600 + Math.random() * 2700,
+    reactionDelay(reactionRandom),
   );
 }
-function reactionPress() {
+function reactionPress(event) {
+  if (active !== "reaction") return;
   if (reaction.phase === "ready") {
+    if (event?.repeat) return;
     startReaction();
     return;
   }
-  if (!["waiting", "go"].includes(reaction.phase)) return;
-  reaction = reactionInput(reaction, performance.now());
+  if (!liveReaction()) return;
+  const now = performance.now();
+  // Modern event timestamps share performance.timeOrigin. Fall back for epoch timestamps.
+  const inputAt = Number.isFinite(event?.timeStamp) && event.timeStamp > 0 && event.timeStamp <= now
+    ? event.timeStamp : now;
+  reaction = reactionInput(reaction, inputAt, { repeat: Boolean(event?.repeat) });
   clearReactionClock();
-  if (reaction.phase === "false-start") early++;
-  else if (reaction.phase === "result") {
-    reactionTimes.push(reaction.elapsed);
-    if (reactionTimes.length === 5) reaction = { phase: "complete" };
+  if (reaction.phase === "settling") {
+    renderReaction();
+    // Measure quarantine from handler time too: a queued old event cannot skip it.
+    reactionTimer = setTimeout(() => {
+      if (reaction.phase !== "settling") return;
+      reaction = settleReaction(reaction, performance.now());
+      finishReaction();
+    }, REACTION_RULES.settle + 1);
+  } else {
+    finishReaction();
   }
-  renderReaction();
 }
 $("reaction-zone").addEventListener("pointerdown", (e) => {
   if (e.isPrimary && e.button === 0) {
     e.preventDefault();
     $("reaction-zone").focus({ preventScroll: true });
-    reactionPress();
+    reactionPress(e);
   }
 });
 $("reaction-zone").addEventListener("keydown", (e) => {
   if ([" ", "Enter"].includes(e.key)) {
     e.preventDefault();
-    if (e.repeat) {
-      if (reaction.phase === "waiting") reactionPress();
-      return;
-    }
-    reactionPress();
+    reactionPress(e);
   }
 });
 $("reaction-zone").addEventListener("click", (e) => {
-  if (e.detail === 0) reactionPress();
+  if (e.detail === 0) reactionPress(e);
 });
+function outsideReactionPress(event) {
+  if (reaction.phase === "waiting") reactionPress(event);
+  else if (liveReaction()) {
+    reaction = { phase: "invalid", reason: reaction.phase === "settling" ? "spam" : "outside" };
+    finishReaction();
+  }
+}
 document.addEventListener(
   "pointerdown",
   (e) => {
+    heldPointers.add(e.pointerId);
     if (
-      reaction.phase === "waiting" &&
-      e.target.closest('[data-panel="reaction"]') &&
-      e.target !== $("reaction-zone") &&
-      !$("reaction-zone").contains(e.target)
+      liveReaction() &&
+      (!$("reaction-zone").contains(e.target) || !e.isPrimary || e.button !== 0)
     )
-      reactionPress();
+      outsideReactionPress(e);
   },
   true,
 );
+for (const name of ["pointerup", "pointercancel"])
+  document.addEventListener(name, (e) => heldPointers.delete(e.pointerId), true);
+document.addEventListener("keydown", (e) => {
+  if (![" ", "Enter"].includes(e.key)) return;
+  heldKeys.add(e.key);
+  if (liveReaction() && !$("reaction-zone").contains(e.target)) outsideReactionPress(e);
+}, true);
+document.addEventListener("keyup", (e) => heldKeys.delete(e.key), true);
+document.addEventListener("click", (e) => {
+  if (e.detail === 0 && liveReaction() && !$("reaction-zone").contains(e.target)) outsideReactionPress(e);
+}, true);
 $("reaction-next").addEventListener("click", () => {
-  if (["false-start", "result", "cancelled"].includes(reaction.phase)) {
+  if (["false-start", "invalid", "result", "cancelled"].includes(reaction.phase)) {
     reaction = { phase: "ready" };
     renderReaction();
     $("reaction-zone").focus({ preventScroll: true });
@@ -285,17 +365,128 @@ $("reaction-restart").addEventListener("click", () => {
   reaction = { phase: "ready" };
   reactionTimes = [];
   early = 0;
+  excluded = 0;
+  attempts = 0;
+  reactionRandom = attemptRandom();
+  $("session-reaction").textContent = "—";
   $("reaction-result").textContent =
     "‘지금!’ 표시가 나타나면 반응하세요. 조기 클릭은 실패로 처리됩니다.";
   renderReaction();
 });
 function cancelReaction() {
   clearReactionClock();
-  if (["waiting", "go"].includes(reaction.phase)) {
+  heldPointers.clear();
+  heldKeys.clear();
+  if (liveReaction()) {
     reaction = { phase: "cancelled" };
-    renderReaction();
+    finishReaction();
   }
 }
+let memoryRound = 0,
+  memory = { phase: "ready", sequence: [], cursor: 0 },
+  memoryResults = [],
+  memoryRandom = attemptRandom(),
+  memoryTimers = [],
+  memoryGeneration = 0;
+function clearMemoryClock() {
+  memoryGeneration++;
+  memoryTimers.forEach(clearTimeout);
+  memoryTimers = [];
+}
+function renderMemory() {
+  $("memory-round").textContent = `ROUND ${memoryRound + 1} / ${MEMORY_LENGTHS.length} · ${MEMORY_LENGTHS[memoryRound]}칸`;
+  $("memory-score").textContent = memoryResults.filter(Boolean).length;
+  $("memory-progress").textContent = `${memoryResults.length} / 8 완료 · ${$("memory-pace").value === "1500" ? "천천히" : "보통"} 보기`;
+  $("memory-grid").replaceChildren(...Array.from({ length: 16 }, (_, cell) => {
+    const button = document.createElement("button");
+    button.className = "memory-tile";
+    button.textContent = cell + 1;
+    button.setAttribute("aria-label", `${Math.floor(cell / 4) + 1}행 ${cell % 4 + 1}열, 칸 ${cell + 1}`);
+    button.disabled = memory.phase !== "recall";
+    button.addEventListener("click", () => answerMemory(cell));
+    return button;
+  }));
+  $("memory-start").disabled = !["ready", "cancelled", "hit", "miss"].includes(memory.phase);
+  $("memory-start").textContent = ["hit", "miss"].includes(memory.phase) ? "다음 순서 보기" : "순서 보기";
+  $("memory-stop").disabled = !["showing", "recall"].includes(memory.phase);
+  $("memory-pace").disabled = memory.phase !== "ready" || memoryResults.length > 0;
+}
+function startMemory() {
+  if (active !== "memory" || !["ready", "cancelled", "hit", "miss"].includes(memory.phase)) return;
+  if (["hit", "miss"].includes(memory.phase)) memoryRound++;
+  clearMemoryClock();
+  memory = makeMemoryRound(memoryRound, memoryRandom);
+  renderMemory();
+  $("memory-result").hidden = true;
+  const token = memoryGeneration, duration = Number($("memory-pace").value), gap = 350;
+  // A brief orientation gap comes before each sequence; no automatic next round.
+  $("memory-status").textContent = "위치를 차례로 보여줍니다. 입력은 순서가 끝난 뒤 시작합니다.";
+  memory.sequence.forEach((cell, i) => {
+    memoryTimers.push(setTimeout(() => {
+      if (token !== memoryGeneration) return;
+      const tile = $("memory-grid").children[cell];
+      tile.classList.add("lit");
+      $("memory-status").textContent = `${i + 1}번째: ${cell + 1}번 칸`;
+      memoryTimers.push(setTimeout(() => tile.classList.remove("lit"), duration));
+    }, 500 + i * (duration + gap)));
+  });
+  memoryTimers.push(setTimeout(() => {
+    if (token !== memoryGeneration || document.hidden || active !== "memory") return;
+    memory = { ...memory, phase: "recall" };
+    renderMemory();
+    $("memory-status").textContent = `${memory.sequence.length}개 위치를 본 순서대로 누르세요. 응답 시간 제한은 없습니다.`;
+    $("memory-grid").firstElementChild.focus({ preventScroll: true });
+  }, 500 + memory.sequence.length * (duration + gap)));
+}
+function answerMemory(cell) {
+  if (memory.phase !== "recall") return;
+  const previous = memory.cursor;
+  memory = memoryInput(memory, cell);
+  $("memory-grid").children[cell].textContent = `${cell + 1} · ${previous + 1}`;
+  if (memory.phase === "recall") {
+    $("memory-status").textContent = `${memory.cursor}개 입력 · 다음 ${memory.cursor + 1}번째 위치를 누르세요.`;
+    return;
+  }
+  memoryResults.push(memory.phase === "hit");
+  clearMemoryClock();
+  renderMemory();
+  memory.sequence.forEach((position, i) => {
+    const tile = $("memory-grid").children[position];
+    tile.classList.add("revealed");
+    tile.textContent = `${position + 1} · ${i + 1}번째`;
+  });
+  $("memory-status").textContent = `${memory.phase === "hit" ? "순서 일치!" : `${previous + 1}번째 위치가 달랐습니다.`} 정답 순서: ${memory.sequence.map((p) => p + 1).join(" → ")}`;
+  if (memoryResults.length === MEMORY_LENGTHS.length) {
+    memory = { ...memory, phase: "complete" };
+    $("memory-start").disabled = true;
+    $("memory-result").hidden = false;
+    $("memory-result").textContent = `${memoryResults.filter(Boolean).length}/8개 순서 일치 · 최대 ${Math.max(0, ...MEMORY_LENGTHS.filter((_, i) => memoryResults[i]))}칸 순서 일치. 표시 속도와 전략에 영향을 받는 게임 기록이며 기억력 진단 점수가 아닙니다.`;
+    $("session-memory").textContent = `${memoryResults.filter(Boolean).length}/8`;
+    $("memory-restart").focus({ preventScroll: true });
+  } else $("memory-start").focus({ preventScroll: true });
+}
+function cancelMemory() {
+  clearMemoryClock();
+  if (!["showing", "recall"].includes(memory.phase)) return;
+  memory = { phase: "cancelled", sequence: [], cursor: 0 };
+  renderMemory();
+  $("memory-status").textContent = "이번 순서를 중단했습니다. 기록에 넣지 않고 새 순서로 다시 시작합니다.";
+}
+$("memory-start").addEventListener("click", startMemory);
+$("memory-stop").addEventListener("click", cancelMemory);
+$("memory-pace").addEventListener("change", renderMemory);
+$("memory-restart").addEventListener("click", () => {
+  clearMemoryClock();
+  memoryRound = 0;
+  memoryResults = [];
+  memoryRandom = attemptRandom();
+  memory = { phase: "ready", sequence: [], cursor: 0 };
+  $("memory-result").hidden = true;
+  $("session-memory").textContent = "—";
+  $("memory-status").textContent = "순서 보기 버튼으로 시작하세요. 위치를 보여준 뒤 같은 순서로 누릅니다.";
+  renderMemory();
+  $("memory-start").focus({ preventScroll: true });
+});
 let hearingIndex = 0,
   hearingResults = [],
   hearingTarget = "a",
@@ -468,6 +659,7 @@ $("hearing-restart").addEventListener("click", () => {
 function switchTab(name) {
   if (active !== name) {
     cancelReaction();
+    cancelMemory();
     abortHearing();
   }
   active = name;
@@ -488,17 +680,23 @@ $("sound-toggle").addEventListener("click", abortHearing);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     cancelReaction();
+    cancelMemory();
     abortHearing();
   }
 });
-window.addEventListener("blur", cancelReaction);
+window.addEventListener("blur", () => {
+  cancelReaction();
+  cancelMemory();
+});
 window.addEventListener("pagehide", () => {
   cancelReaction();
+  cancelMemory();
   abortHearing();
 });
 renderIllusion();
 renderColorRound();
 renderReaction();
+renderMemory();
 renderHearing();
 if (document.modelContext?.registerTool) {
   const lifecycle = new AbortController();

@@ -50,6 +50,9 @@
         <button data-tab="motion" aria-pressed="false">
           <small>04 / PLAY</small><span>패턴 스튜디오</span>
         </button>
+        <button data-tab="memory" aria-pressed="false">
+          <small>05 / MEMORY</small><span>위치 순서 기억</span>
+        </button>
       </nav>
       <section data-panel="color" aria-labelledby="color-title">
         <div class="section-title">
@@ -84,21 +87,22 @@
               <strong id="color-score">0</strong><span>/ 12</span>
             </div>
             <p id="color-description">
-              갈수록 색의 차이가 작아집니다.<br />12개의 색을 얼마나 구분할 수
-              있을까요?
+              두 번 연속 맞히면 두 단계 어렵게, 틀리면 한 단계 쉽게 갑니다.
+              밝거나 어두운 한 칸을 찾아보세요. 매번 색과 위치가 바뀝니다.
             </p>
             <ol
               id="color-history"
               class="round-history"
               aria-label="라운드별 결과"
             ></ol>
-            <div id="color-result" class="result-note" hidden></div>
+            <div id="color-result" class="result-note" role="status" hidden></div>
             <button id="color-restart" class="button outline">
               새로운 색으로 다시 하기
             </button>
             <p class="fine-print">
               ΔL은 HSL 밝기 차이입니다. 화면 밝기와 주변 조명을 일정하게
-              유지해보세요.
+              유지해보세요. 최대 6×6 · ΔL 0.35%. 작은 차이는 화면에서 같은
+              색으로 반올림될 수 있습니다. 보정된 색차나 색각 검사가 아닙니다.
             </p>
           </aside>
         </div>
@@ -179,14 +183,18 @@
             <p id="reaction-caption">기록 0 / 5 · 조기 클릭 0회</p>
             <ol id="reaction-history" class="reaction-history"></ol>
             <p class="result-note" id="reaction-result">
-              신호 전에 누르면 실패입니다. 연속 클릭이나 키를 길게 누르는
-              방식으로 기록을 만들 수 없습니다.
+              신호 전 입력·키 유지·연타·100 ms 미만 응답은 제외합니다.
+              3초 안에 한 번만 반응하고 입력 확인이 끝날 때까지 기다리세요.
+              최대 15번 시도 안에 정상 기록 5회를 모읍니다.
             </p>
             <button id="reaction-restart" class="button outline">
               기록 초기화
             </button>
             <p class="fine-print">
-              결과는 5회 기록의 중앙값입니다. 기기·입력 방식에 따라 달라집니다.
+              결과는 5회 중앙값·중앙값에서의 편차(MAD)·범위입니다.
+              100 ms는 게임의 예측 입력 제외 규칙이며 사람의 능력 한계가
+              아닙니다. 같은 기기·입력 방식으로 비교해보세요. 클라이언트의
+              입력 검사이며 보안 수준의 부정행위 방지는 아닙니다.
             </p>
           </aside>
         </div>
@@ -353,21 +361,60 @@
           </aside>
         </div>
       </section>
+      <section data-panel="memory" aria-labelledby="memory-title" hidden>
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">HOLD THE ORDER.</p>
+            <h1 id="memory-title">사라진 위치,<br />순서까지 기억하나요?</h1>
+          </div>
+          <span class="big-index" aria-hidden="true">05</span>
+        </div>
+        <div class="arena-layout">
+          <div class="memory-arena">
+            <div class="arena-top"><span id="memory-round">ROUND 1 / 8</span><span>3 → 7칸</span></div>
+            <div id="memory-grid" class="memory-grid" aria-label="4행 4열 위치 순서 게임"></div>
+            <div class="arena-bottom">
+              <span id="memory-status" role="status" aria-atomic="true">순서 보기 버튼으로 시작하세요. 위치를 보여준 뒤 같은 순서로 누릅니다.</span>
+            </div>
+          </div>
+          <aside class="score-sheet">
+            <p class="eyebrow">PLACE, THEN ORDER.</p>
+            <div class="score-number"><strong id="memory-score">0</strong><span>/ 8</span></div>
+            <p>한 번에 한 위치가 표시됩니다. 끝나면 본 순서대로 누르세요.
+              위치는 매번 새로 뽑고 한 순서 안에서는 중복되지 않습니다.</p>
+            <p id="memory-progress">0 / 8 완료</p>
+            <label for="memory-pace">보는 속도</label>
+            <select id="memory-pace">
+              <option value="850">보통 · 칸마다 0.85초</option>
+              <option value="1500">천천히 · 칸마다 1.5초</option>
+            </select>
+            <button id="memory-start" class="button">순서 보기</button>
+            <button id="memory-stop" class="button outline" disabled>이번 순서 중단</button>
+            <div id="memory-result" class="result-note" role="status" hidden></div>
+            <button id="memory-restart" class="button outline">새 순서로 초기화</button>
+            <p class="fine-print">보기 중에는 입력을 받지 않습니다. 응답 시간 제한은 없으며
+              Tab으로 이동하고 Space·Enter로 선택할 수 있습니다. 위치 번호도
+              상태 안내로 읽어줍니다. 속도를 바꾸려면 초기화하세요. 기억력 진단이 아닙니다.</p>
+          </aside>
+        </div>
+      </section>
       <div class="session-strip">
         <span>이번 세션</span
         ><span>색감 <strong id="session-color">—</strong></span
         ><span>반응 <strong id="session-reaction">—</strong></span
         ><span>청취 <strong id="session-hearing">—</strong></span>
+        <span>순서 <strong id="session-memory">—</strong></span>
       </div>
       <details class="about">
         <summary>테스트 원리와 참고 자료</summary>
         <p>
-          색감 테스트는 HSL 밝기 차이가 줄어드는 시각 게임이며 색각 진단이
+          색감 테스트는 응답에 따라 HSL 밝기 차이가 달라지는 시각 게임이며 색각 진단이
           아닙니다. 고주파 챌린지는 사인파가 나오는 A/B 구간을 고르는
           체험입니다. 정답을 우연히 고를 수 있고, 이어폰·스피커가 고주파를
           재생하지 못할 수도 있어 청력 나이나 의학적 청력 검사 결과로 환산하지
           않습니다. 반응속도는 화면 신호에서 입력까지의 브라우저 시간을 측정하며
-          디스플레이·입력 지연을 포함합니다.
+          디스플레이·입력 지연을 포함합니다. 위치 순서 기억은 3–7개 위치의
+          순서를 재현하는 게임으로 임상 기억력 검사나 백분위가 아닙니다.
         </p>
         <p>
           결과와 설정은 페이지 메모리에만 남습니다. 로그인·분석 도구·마이크·외부
