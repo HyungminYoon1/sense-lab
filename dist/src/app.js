@@ -17,9 +17,11 @@ import {
   HEARING_FREQUENCIES,
 } from "./challenges.js";
 import { playPair, stopPair } from "./hearing.js";
+import { setupPitch } from "./pitch-ui.js";
 import { setupHistory } from "./history-view.js";
 const $ = (id) => document.getElementById(id);
 const savedHistory = setupHistory();
+const pitch = setupPitch(() => { stopSound(); abortHearing(); });
 const attemptRandom = () => seededRandom(crypto.getRandomValues(new Uint32Array(1))[0]);
 let active = "color",
   reveal = false;
@@ -694,6 +696,7 @@ function switchTab(name) {
     .querySelectorAll("[data-panel]")
     .forEach((p) => (p.hidden = p.dataset.panel !== name));
   selectExperiment(name);
+  pitch.select(name);
 }
 document
   .querySelectorAll("[data-tab]")
@@ -704,6 +707,7 @@ document.addEventListener("visibilitychange", () => {
     cancelReaction();
     cancelMemory();
     abortHearing();
+    pitch.cancel();
   }
 });
 window.addEventListener("blur", () => {
@@ -714,6 +718,7 @@ window.addEventListener("pagehide", () => {
   cancelReaction();
   cancelMemory();
   abortHearing();
+  pitch.cancel();
 });
 renderIllusion();
 renderColorRound();

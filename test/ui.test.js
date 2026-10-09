@@ -65,7 +65,6 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     }
   }
   ids.get("wave-type").value = "sine";
-  ids.get("force-mode").value = "attract";
   ids.get("memory-pace").value = "850";
   for (const id of ["reaction-symbol", "reaction-message", "reaction-instruction"])
     ids.get("reaction-zone").append(ids.get(id));

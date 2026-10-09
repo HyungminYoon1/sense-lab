@@ -1,5 +1,15 @@
 # Decision log
 
+## D17 — Replace pattern studio with relative-pitch discrimination (2026-10-09)
+
+- Context: owner approved sensory-test consistency and a separate high-quality drawing workshop. The particle studio is creative rather than a sensory test.
+- Options: delete it completely, keep an unrelated toy in this app, or move pattern creation to draw-desk and add a testable two-tone task here.
+- Decision: replace the fourth tab with twelve randomized A/B higher/lower questions. Base frequencies near 220–880 Hz, logarithmic cents differences, two-correct/two-level harder and one-miss/one-level easier, bounded 200–3 cents. Answers only after completed deliberate playback; reveal actual frequencies/cents after one answer. Replay the same pair, cancel on stop/tab/hidden/page exit. Finite sine voices with gain <=0.02 and envelope, no microphone/autoplay.
+- State/retention: pitch rounds/results are memory-only. Keep the existing color/reaction/memory history schema and shared total 3 unchanged; no migration, storage or ranking writes for pitch. D17 supersedes earlier pattern-studio UI statements, not D14/D15's private/shared storage contracts.
+- Rationale: consistent sensory game, honest relative-pitch result without absolute-pitch, health, age or population-ranking inference; preserve existing user history and other app summaries.
+- Affected: index.html, app.js, experiments.js, pitch-model.js, pitch-audio.js, pitch-ui.js, focused tests, architecture and README; migrated creation is independently implemented in draw-desk.
+- Review: actual browser early-answer/duplicate-answer/replay/cancel flows, all existing regressions, responsive captures and new gallery preview; test-double gain does not establish physical sound pressure or calibrated hearing ability.
+
 ## D14 — Bounded personal test history (2026-10-09, LOCAL ONLY)
 
 - Context: owner explicitly authorizes personal per-round history, trends, clear-one/all privacy controls and bounded local persistence. This supersedes D02's ban on persistent results and the corresponding memory-only statements in D08/D11/D12/D13; active seeds, raw input and audio still remain ephemeral.

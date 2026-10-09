@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="색 구분, 반응 시간, 위치 순서 기억 게임과 고주파 A/B 청취."
+      content="색 구분, 반응속도, 순서 기억, 음높이 구분과 고주파 청취 테스트."
     />
     <meta
       http-equiv="Content-Security-Policy"
@@ -47,8 +47,8 @@
         <button data-tab="sound" aria-pressed="false">
           <small>03 / HEARING</small><span>고주파 챌린지</span>
         </button>
-        <button data-tab="motion" aria-pressed="false">
-          <small>04 / PLAY</small><span>패턴 스튜디오</span>
+        <button data-tab="pitch" aria-pressed="false">
+          <small>04 / PITCH</small><span>음높이 구분</span>
         </button>
         <button data-tab="memory" aria-pressed="false">
           <small>05 / MEMORY</small><span>위치 순서 기억</span>
@@ -307,58 +307,33 @@
           </div>
         </details>
       </section>
-      <section data-panel="motion" aria-labelledby="motion-title" hidden>
+      <section data-panel="pitch" aria-labelledby="pitch-title" hidden>
         <div class="section-title">
           <div>
-            <h1 id="motion-title">입자 패턴</h1>
+            <h1 id="pitch-title">두 음의 높낮이 구분하기</h1>
           </div>
           <span class="big-index" aria-hidden="true">04</span>
         </div>
         <div class="arena-layout">
-          <div class="motion-arena">
+          <div class="hearing-arena">
             <div class="arena-top">
-              <span id="motion-caption">ATTRACT · 360 PARTICLES</span
-              ><span>마우스 · 터치 · 방향키</span>
+              <span id="pitch-round">ROUND 01 / 12</span><span>RELATIVE PITCH</span>
             </div>
-            <canvas
-              id="motion-canvas"
-              tabindex="0"
-              aria-label="패턴 스튜디오. 포인터나 방향키로 중심을 움직입니다."
-            ></canvas>
+            <div class="frequency-display"><span>B는 A보다 높을까요, 낮을까요?</span><strong id="pitch-display">A → B</strong><div class="intervals"><span id="pitch-a">A</span><div class="signal-line" aria-hidden="true"></div><span id="pitch-b">B</span></div></div>
+            <div class="hearing-controls"><button id="pitch-play" class="button">두 음 듣기</button><button id="pitch-stop" class="button outline" disabled>즉시 중단</button></div>
+            <div class="hearing-answers"><button id="pitch-up" disabled>B가 높아요 ↗</button><button id="pitch-down" disabled>B가 낮아요 ↘</button></div>
             <div class="arena-bottom">
-              <span id="export-message" role="status"
-                >현재 화면을 PNG로 저장</span
-              ><button id="motion-save" class="small-button">PNG 저장</button>
+              <span id="pitch-feedback" role="status">두 음을 듣고 B의 높낮이를 골라주세요.</span><button id="pitch-next" class="small-button" disabled>다음 두 음</button>
             </div>
           </div>
-          <aside class="score-sheet lab-controls">
-            <h2>패턴 설정</h2>
-            <label for="force-mode">움직임</label
-            ><select id="force-mode">
-              <option value="attract">끌어당기기</option>
-              <option value="repel">밀어내기</option></select
-            ><label for="density"
-              >점의 개수 <output id="density-output">360</output></label
-            ><input
-              id="density"
-              type="range"
-              min="100"
-              max="700"
-              step="20"
-              value="360"
-            /><label for="trail"
-              >잔상 <output id="trail-output">70%</output></label
-            ><input
-              id="trail"
-              type="range"
-              min="0"
-              max="95"
-              value="70"
-            /><button id="motion-pause" class="button" aria-pressed="false">
-              일시정지</button
-            ><button id="motion-reset" class="button outline">
-              다시 그리기
-            </button>
+          <aside class="score-sheet">
+            <p class="eyebrow">정답 수</p><div class="score-number"><strong id="pitch-score">0</strong><span>/ 12</span></div>
+            <p>같은 길이의 두 음을 듣고 높낮이를 구분합니다. 두 번 연속 맞히면 차이가 작아지고, 틀리면 커집니다. 기준 음과 방향은 매번 바뀝니다.</p>
+            <ol id="pitch-history" class="round-history" aria-label="음높이 라운드별 결과"></ol>
+            <label for="pitch-volume">앱 음량 <output id="pitch-volume-output">3</output></label><input id="pitch-volume" type="range" min="0" max="10" value="3">
+            <p class="listening-note">기기 음량을 낮추세요. 불편하면 즉시 중단하세요.</p>
+            <div id="pitch-result" class="result-note" role="status" hidden></div><button id="pitch-restart" class="button outline">새 테스트</button>
+            <p class="fine-print">100센트는 반음입니다. 음높이 차이를 구분하는 게임으로, 절대음감 검사와 다릅니다.</p>
           </aside>
         </div>
       </section>
@@ -410,11 +385,12 @@
         ><span>반응 <strong id="session-reaction">—</strong></span
         ><span>청취 <strong id="session-hearing">—</strong></span>
         <span>순서 <strong id="session-memory">—</strong></span>
+        <span>음높이 <strong id="session-pitch">—</strong></span>
       </div>
       <section class="history-controls" aria-labelledby="history-title">
         <h2 id="history-title">저장 기록</h2>
         <p>색감·반응·순서 기억은 테스트별 최근 20회를 이 브라우저에 저장합니다.
-          중도에 끝낸 테스트와 청취·패턴은 저장하지 않습니다. 반응은 최대 15시도까지 마친 기록을 저장합니다.</p>
+          중도에 끝낸 테스트와 청취·음높이는 저장하지 않습니다. 반응은 최대 15시도까지 마친 기록을 저장합니다.</p>
         <p class="fine-print">갤러리에는 완료한 테스트 종류 수(최대 3)만 공유합니다.
           같은 사이트 출처의 앱은 브라우저 저장 공간에 접근할 수 있습니다. 공용 기기에서는 사용 후 기록을 삭제하세요.</p>
         <button id="history-clear-all" class="small-button outline">전체 기록 삭제</button>
