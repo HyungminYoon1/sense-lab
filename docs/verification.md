@@ -102,3 +102,10 @@
 - 확인한 브라우저의 오류/경고 로그 없음.
 
 모든 브라우저/기기에서의 검증, 공식 접근성 인증, 정밀 과학 검증은 수행하지 않았습니다.
+# 2026-10-12 — 시간차 구분 추가 검증
+
+- Local Node: PASS 36 tests and static checker. New pure model covers random left/right order, positive frame gaps, adaptive bounds, frame calibration and interrupted/unstable timestamps.
+- Isolated Chrome: unchecked consent disables start; explicit stop/reset retains a 2s cooldown; twelve complete rounds with left-only answers produced 6/12, then terminal controls disable. Answer controls are disabled before/after answer. Escape and panel navigation clear dots without scoring. New/reset affects only the current temporal session; a complete run created no storage keys.
+- Synthetic delayed rAF calibration rejected the run as unstable with score 0. This proves the tested exception branch, not physical display timing or universal stimulus safety.
+- Desktop 1440×1000 plus 390 and 320 narrow screenshots/bounds reviewed, idle/shown/answered/completed states captured. The shown stimulus is a finite small neutral dot pair, not periodic/fullscreen/red flashing. Selected ordinary Chrome flows recorded no uncaught JS errors. Human perception, clinical CFF/age inference, other browsers and formal WCAG certification are not claimed.
+- Remote CI/public Pages: NOT_RUN at preparation time; append publication evidence only after independent confirmation.

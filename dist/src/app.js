@@ -18,10 +18,12 @@ import {
 } from "./challenges.js";
 import { playPair, stopPair } from "./hearing.js";
 import { setupPitch } from "./pitch-ui.js";
+import { setupTemporal } from "./temporal-ui.js";
 import { setupHistory } from "./history-view.js";
 const $ = (id) => document.getElementById(id);
 const savedHistory = setupHistory();
 const pitch = setupPitch(() => { stopSound(); abortHearing(); });
+const temporal = setupTemporal();
 const attemptRandom = () => seededRandom(crypto.getRandomValues(new Uint32Array(1))[0]);
 let active = "color",
   reveal = false;
@@ -697,6 +699,7 @@ function switchTab(name) {
     .forEach((p) => (p.hidden = p.dataset.panel !== name));
   selectExperiment(name);
   pitch.select(name);
+  temporal.select(name);
 }
 document
   .querySelectorAll("[data-tab]")
@@ -708,17 +711,20 @@ document.addEventListener("visibilitychange", () => {
     cancelMemory();
     abortHearing();
     pitch.cancel();
+    temporal.cancel();
   }
 });
 window.addEventListener("blur", () => {
   cancelReaction();
   cancelMemory();
+  temporal.cancel();
 });
 window.addEventListener("pagehide", () => {
   cancelReaction();
   cancelMemory();
   abortHearing();
   pitch.cancel();
+  temporal.cancel();
 });
 renderIllusion();
 renderColorRound();

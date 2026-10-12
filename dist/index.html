@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="색 구분, 반응속도, 순서 기억, 음높이 구분과 고주파 청취 테스트."
+      content="색 구분, 반응속도, 순서 기억, 음높이와 시간차 구분 실험."
     />
     <meta
       http-equiv="Content-Security-Policy"
@@ -52,6 +52,9 @@
         </button>
         <button data-tab="memory" aria-pressed="false">
           <small>05 / MEMORY</small><span>위치 순서 기억</span>
+        </button>
+        <button data-tab="temporal" aria-pressed="false">
+          <small>06 / TIMING</small><span>시간차 구분</span>
         </button>
       </nav>
       <section data-panel="color" aria-labelledby="color-title">
@@ -379,6 +382,33 @@
           <div id="memory-saved" class="saved-runs"></div>
         </section>
       </section>
+      <section data-panel="temporal" aria-labelledby="temporal-title" hidden>
+        <div class="section-title"><div><h1 id="temporal-title">어느 점이 먼저 나타났나요?</h1></div><span class="big-index" aria-hidden="true">06</span></div>
+        <div class="arena-layout">
+          <div class="temporal-arena">
+            <div class="arena-top"><span id="temporal-round">ROUND 01 / 12</span><span>시간 순서</span></div>
+            <div class="temporal-stage" aria-label="두 점의 표시 순서 실험">
+              <div class="temporal-point"><span id="temporal-left-dot" class="temporal-dot" aria-hidden="true"></span><span>왼쪽</span></div>
+              <span class="temporal-fixation" aria-hidden="true">+</span>
+              <div class="temporal-point"><span id="temporal-right-dot" class="temporal-dot" aria-hidden="true"></span><span>오른쪽</span></div>
+            </div>
+            <p id="temporal-stage-label" class="temporal-stage-label">가운데 +를 보고 기다리세요</p>
+            <div class="temporal-controls"><button id="temporal-play" class="small-button" disabled>두 점 보기</button><button id="temporal-stop" class="small-button outline" disabled>즉시 중단</button></div>
+            <div class="temporal-answers"><button id="temporal-left" disabled>왼쪽이 먼저</button><button id="temporal-right" disabled>오른쪽이 먼저</button></div>
+            <div class="arena-bottom"><span id="temporal-feedback" role="status" aria-atomic="true">두 점을 보고 먼저 나타난 쪽을 고르세요.</span><button id="temporal-next" class="small-button" disabled>다음 순서</button></div>
+          </div>
+          <aside class="score-sheet">
+            <p class="eyebrow">정답 수</p><div class="score-number"><strong id="temporal-score">0</strong><span>/ 12</span></div>
+            <p>작은 두 점이 한 번씩 나타납니다. 두 번 연속 맞히면 시간차가 줄고, 틀리면 커집니다. 순서는 매번 바뀝니다.</p>
+            <label class="temporal-consent" for="temporal-consent"><input id="temporal-consent" type="checkbox"><span>짧은 빛 자극 안내를 읽었습니다.</span></label>
+            <p class="listening-note">빛 자극에 민감하거나 광과민성 발작 경험이 있으면 참여하지 마세요. 불편하면 즉시 중단하세요.</p>
+            <p id="temporal-frame" class="fine-print">시작할 때 화면 갱신 간격을 확인합니다.</p>
+            <ol id="temporal-history" class="round-history" aria-label="시간차 라운드별 결과"></ol>
+            <div id="temporal-result" class="result-note" role="status" hidden></div><button id="temporal-restart" class="button outline">새 테스트</button>
+            <p class="fine-print">ESC로 중단합니다. 임계깜박이 주파수 검사 대신 시간 순서를 구분하는 실험이며, 결과는 이번 화면에서만 유지됩니다.</p>
+          </aside>
+        </div>
+      </section>
       <div class="session-strip">
         <span>이번 세션</span
         ><span>색감 <strong id="session-color">—</strong></span
@@ -386,11 +416,12 @@
         ><span>청취 <strong id="session-hearing">—</strong></span>
         <span>순서 <strong id="session-memory">—</strong></span>
         <span>음높이 <strong id="session-pitch">—</strong></span>
+        <span>시간차 <strong id="session-temporal">—</strong></span>
       </div>
       <section class="history-controls" aria-labelledby="history-title">
         <h2 id="history-title">저장 기록</h2>
         <p>색감·반응·순서 기억은 테스트별 최근 20회를 이 브라우저에 저장합니다.
-          중도에 끝낸 테스트와 청취·음높이는 저장하지 않습니다. 반응은 최대 15시도까지 마친 기록을 저장합니다.</p>
+          중도에 끝낸 테스트와 청취·음높이·시간차는 저장하지 않습니다. 반응은 최대 15시도까지 마친 기록을 저장합니다.</p>
         <p class="fine-print">갤러리에는 완료한 테스트 종류 수(최대 3)만 공유합니다.
           같은 사이트 출처의 앱은 브라우저 저장 공간에 접근할 수 있습니다. 공용 기기에서는 사용 후 기록을 삭제하세요.</p>
         <button id="history-clear-all" class="small-button outline">전체 기록 삭제</button>
@@ -405,6 +436,7 @@
         </p>
         <p>
           저장 기록을 서버로 전송하지 않습니다.
+          시간차 구분은 화면 프레임으로 두 점의 표시 시점을 달리합니다. 브라우저의 표시 시각 차이이며 실제 빛의 시각이나 임계깜박이 주파수·건강 상태를 측정하지 않습니다.
         </p>
         <p>
           <a
@@ -427,6 +459,7 @@
             rel="noopener noreferrer"
             >MDN · Web Audio API</a
           >
+          · <a href="https://www.w3.org/WAI/WCAG22/Understanding/three-flashes-or-below-threshold.html" target="_blank" rel="noopener noreferrer">W3C · 빛 자극 기준</a>
         </p>
       </details>
     </main>

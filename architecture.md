@@ -15,6 +15,7 @@ Independent static GitHub Pages project. Browser-only HTML, CSS, ES modules and 
 - `dist/src/challenges.js`: pure seeded random generation, color staircase, reaction transitions/results and spatial sequence calculations. `hearing.js` owns bounded A/B audio playback and cancellation without microphone input. Challenge timing, input adapters, focus and cancellation remain in `app.js`; the pure models do not read DOM, clocks or storage.
 - `dist/src/app.js`: UI state and event orchestration. SENSE LAB additionally separates browser audio/canvas lifecycle in `experiments.js`.
 - `dist/src/pitch-model.js`: pure randomized cents comparisons and adaptive difficulty. `pitch-audio.js` owns finite low-frequency pairs; `pitch-ui.js` owns the twelve-round UI lifecycle. Pattern creation moved to the independent draw-desk app under the owner's approved creative scope.
+- `dist/src/temporal-model.js`: pure temporal-order randomization, bounded staircase, frame estimates and onset-quality checks. `temporal-ui.js` owns deliberate two-dot trials, rAF cancellation and memory-only results. No periodic flicker, red flashes or full-screen stimulus. Each neutral dot changes once per trial; starts are at least 2 seconds apart, including restart/cancellation. D18 adds an ephemeral experiment without changing D14/D15's history or shared-summary schemas.
 - `tools/`: localhost static preview and syntax/asset checks; never deployed.
 - `test/`: focused pure-model tests; never deployed.
 - `.github/workflows/pages.yml`: test first, upload only `dist`, deploy via GitHub Pages.

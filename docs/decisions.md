@@ -1,5 +1,15 @@
 # Decision log
 
+## D18 — Temporal-order alternative to periodic flicker (2026-10-12)
+
+- Context: owner requests a CFF-like experiment and explicitly permits a similar task; approves publication after validation.
+- Options: a high-rate full-field strobe with hardware/clinical limits; remove the request; finite randomized temporal-order trials.
+- Decision: twelve trials with two neutral 34px dots, each shown once for ten frames. Differences 12–1 frames, two-hit/one-miss adaptive staircase, random side/wait, deliberate consent/start, minimum 2s between trial starts (not reset by cancel/new-test). Thirty-frame estimate before each trial; reject unstable calibration and onset/display gaps. No red, periodic flicker, full-screen mode, automatic next trial or clinical/age/CFF inference. Stop/Escape/navigation/hidden/blur/page exit cancel without scoring.
+- Rationale: retain an engaging temporal-vision task while avoiding high-rate flashing and falsely calibrated Hz claims. Actual optical timing and universal safety are not verified by browser timestamps. Guidance: W3C WCAG 2.3.1 and Epilepsy Foundation photosensitivity.
+- State/retention: seeded active trials and observed results remain in memory only. No private history/schema migration, shared-progress mutation, account, DB, ranking or network is added; D14/D15 remain unchanged.
+- Affected: temporal-model.js, temporal-ui.js, app.js, index.html, styles.css, temporal.test.js, README, architecture, verification, and the gallery's actual preview/description.
+- Review: no-start-before-consent, early/duplicate answers, full session, cancel/restart cooldown, delayed frame rejection, keyboard, 320/390/1440px, storage preservation. Functional/model/browser evidence does not constitute human psychophysics, clinical or formal WCAG certification.
+
 ## D17 — Replace pattern studio with relative-pitch discrimination (2026-10-09)
 
 - Context: owner approved sensory-test consistency and a separate high-quality drawing workshop. The particle studio is creative rather than a sensory test.
