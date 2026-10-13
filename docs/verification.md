@@ -1,5 +1,7 @@
 # 검증 기록
 
+[2026-10-13 systematic edge cases — new executable tests, red/green evidence, browser scope](edge-cases-20261013.md)
+
 ## 2026-10-13 초기화·측정값 해석 — LOCAL / BROWSER_LOCAL
 
 - Bug: 청취9라운드 완료 후 재시작해도 session-hearing이 이전 결과로 남았습니다. 실제 app 이벤트를 연결한 기존 무음 DOM/시계 더블을 확장해 수정 전0/9 != — 실패를 확인했고 재시작의 요약 초기화1줄로 수정했습니다. 저장·난수·음량·빛 자극 변경 없음.

@@ -1,5 +1,14 @@
 # Decision log
 
+## D20 — Reject absent timing samples without changing stimulus / 2026-10-13
+
+- Context: systematic edge-test expansion is explicitly authorized for this owned app; parent handles release. New executable tests reproduced 2 Node boundary failures.
+- Options: trust return without observing effects / ignore absent samples; redesign storage or scientific model; validate the existing boundary and retain original contracts.
+- Decision: E01 sparse calibration samples returned a plausible interval/rate; E02 sparse onset gaps returned 16 ms. Both now reject with null. This is pure model boundary coverage: current UI pushes dense arrays, so no ordinary-UI exploit is claimed.
+- Rationale: failure reporting and input rejection must match the actual bounded state. No new schema, retention, achievement rule, backend, physics, stimulus or architecture is introduced.
+- Affected files: dist/src/temporal-model.js; test/edge-20261013.test.js; tools/browser-edge-20261013.mjs; docs/edge-cases-20261013.md; docs/verification.md; .gitignore (local evidence only).
+- Review: [matrix and exact commands](edge-cases-20261013.md). Current UI generates dense frame arrays; this is defensive pure-boundary validation, not an observed user clinical/timing result. Storage readback is synchronous best effort, not atomic multi-tab isolation. Fixtures and local Chrome are distinguished from device/live evidence. Remote CI/live remain NOT_RUN; parent integrates/releases.
+
 ## D19 — 재시작 결과와 측정값 읽기 / 2026-10-13
 
 - Context: 자동 구현 승인 범위에서 초기화·취소와 결과 해석을 점검했습니다. 청취 9라운드 종료 후 재시작하면 정답 수는 0인데 세션 요약은 이전 결과였습니다.

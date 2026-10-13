@@ -13,7 +13,7 @@ export function temporalStep(state, correct) {
   return state.streak ? { level: Math.min(TEMPORAL_FRAMES.length - 1, state.level + 1), streak: 0 } : { level: state.level, streak: 1 };
 }
 export function frameEstimate(samples) {
-  if (!Array.isArray(samples) || samples.length < 16 || samples.length > 120 || !samples.every(n => Number.isFinite(n) && n > 0)) return null;
+  if (!Array.isArray(samples) || samples.length < 16 || samples.length > 120 || !Array.from(samples).every(n => Number.isFinite(n) && n > 0)) return null;
   const sorted = [...samples].sort((a, b) => a - b), median = sorted[Math.floor(sorted.length / 2)];
   if (median < 3 || median > 50 || samples.some(n => n > Math.max(50, median * 2.5))) return null;
   const deviations = samples.map(n => Math.abs(n - median)).sort((a, b) => a - b);
@@ -23,6 +23,6 @@ export function frameEstimate(samples) {
 export function temporalTiming(firstAt, secondAt, interval, frames, gaps) {
   if (![firstAt, secondAt, interval].every(Number.isFinite) || interval <= 0 || !Number.isInteger(frames) || frames < 1 || !Array.isArray(gaps) || !gaps.length) return null;
   const elapsed = secondAt - firstAt;
-  if (elapsed <= 0 || Math.abs(elapsed - interval * frames) > Math.max(interval * 1.5, interval * frames * 0.3) || gaps.some(n => !Number.isFinite(n) || n <= 0 || n > Math.max(50, interval * 2.5))) return null;
+  if (elapsed <= 0 || Math.abs(elapsed - interval * frames) > Math.max(interval * 1.5, interval * frames * 0.3) || Array.from(gaps).some(n => !Number.isFinite(n) || n <= 0 || n > Math.max(50, interval * 2.5))) return null;
   return Math.round(elapsed * 10) / 10;
 }
