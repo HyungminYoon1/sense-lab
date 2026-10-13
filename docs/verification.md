@@ -1,5 +1,15 @@
 # 검증 기록
 
+## 2026-10-13 초기화·측정값 해석 — LOCAL / BROWSER_LOCAL
+
+- Bug: 청취9라운드 완료 후 재시작해도 session-hearing이 이전 결과로 남았습니다. 실제 app 이벤트를 연결한 기존 무음 DOM/시계 더블을 확장해 수정 전0/9 != — 실패를 확인했고 재시작의 요약 초기화1줄로 수정했습니다. 저장·난수·음량·빛 자극 변경 없음.
+- Content/UI YES: 반응값200/205/210/215/2900의 중앙값210/MAD5/범위200–2900 예와 반복 비교 방법, 프레임/ms 차이를 읽는 안내. Files: dist/src/app.js, dist/index.html, test/ui.test.js, tools/browser-audit-20261013.js, docs/decisions.md, 이 문서.
+- Sources: 지정 디렉터리 inventory PARTIAL. architecture.md/README.md/decisions 및 index/app/challenges/hearing/pitch/temporal 모듈, ui/temporal/pitch-audio 테스트·check 전문 VERIFIED. 저장·CSS·과거 QA는 관련 부분 선별 및 기존 전체 검사 실행; 전체 저장소 리뷰로 표시하지 않습니다. api-spec.md/requirements.md/저장소 AGENTS 없음. 전달 지침 적용.
+- Node v22.23.2/npm11.12.0: `npm test` **36/36 PASS**, `npm run check` PASS. 기존 입력/5유효·15시도/저장한도·peer 보존·오디오 유한취소·프레임 지연 제외 검증 유지. 새 청취 회귀는 실제9라운드→결과→재시작과 storage 무변경을 확인하는 TEST_DOUBLE입니다.
+- Browser: isolated muted headless Chromium / main loopback /sense-lab/, audit **16 assertions PASS**. 색12답안 완료 및 새 테스트의 기록 보존, 반응 조기입력 거절/실제5개 자동 응답 확정, 시간차 consent/취소/점 제거/재시작2초 대기, pitch·고주파 즉시 중단 답변 차단, 고주파9라운드 실제 종료→재시작 세션요약 —, 기억 보기 취소 뒤 늦은 recall 방지. pageerror0. 반응값은 자동 입력/기기 이벤트 지연으로 생긴 기능 검사 결과이며 사람의 반응시간이 아닙니다.
+- Screenshots: 부모 `output/qa-20261013/sense-lab/{desktop,mobile-390,mobile-320}.png`. 정상5회 반응 결과와 새 결과 읽기 안내 펼침. selectors #reaction-zone, #reaction-result, #reaction-reading, #temporal-consent, #session-hearing. 1440×1000/390×844/320×844 문서 가로 넘침 없음.
+- Limits: 오디오 음소거, 작은 두 점의 기존 안전 설계 유지; 새 점멸/저주파 flash/자동 재생 없음. 실제 소리/빛 시각·인간 실험·진단·물리 터치·스크린리더·다른 브라우저/WebMCP 지원 런타임 NOT_RUN. provenance는 D19의 공개 pure 계산과 MDN. REMOTE_CI/LIVE·갤러리 통합은 메인 담당; commit/push/deploy 없음.
+
 ## 2026-10-10 화학·창작 확장 — REMOTE_CI / LIVE
 
 - 구현 커밋 `3db484fb90a1db896d12a544ddd94573e22e83b6`의 [verify/deploy PASS](https://github.com/HyungminYoon1/sense-lab/actions/runs/37947893783). 원격 origin을 확인한 뒤 정상 fast-forward로 게시했습니다.

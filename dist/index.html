@@ -205,6 +205,11 @@
           <p class="fine-print">정상 5회 기록끼리 비교합니다. 5회 미달 기록도 펼쳐볼 수 있습니다. 화면·입력 기기의 지연이 포함되므로 같은 기기와 입력 방식으로 비교하세요.</p>
           <div id="reaction-saved" class="saved-runs"></div>
         </section>
+        <details class="bonus" id="reaction-reading">
+          <summary>결과 읽기 · 한 번 늦게 반응했다면?</summary>
+          <p>200, 205, 210, 215, 2900 ms라면 중앙값은 210 ms, MAD는 5 ms, 범위는 200–2900 ms입니다. 가운데 기록은 비슷해도 한 번 큰 지연이 있었다는 사실은 범위에 남습니다. 느린 유효 기록도 포함합니다.</p>
+          <p>다시 해볼 때는 같은 기기·입력 방식으로 정상 5회를 모은 기록끼리 비교하세요. 새 테스트는 새 대기 시간을 뽑습니다. 가장 빠른 한 번보다 중앙값·MAD·범위를 함께 살펴보세요.</p>
+        </details>
       </section>
       <section data-panel="sound" aria-labelledby="hearing-title" hidden>
         <div class="section-title">
@@ -403,6 +408,7 @@
             <label class="temporal-consent" for="temporal-consent"><input id="temporal-consent" type="checkbox"><span>짧은 빛 자극 안내를 읽었습니다.</span></label>
             <p class="listening-note">빛 자극에 민감하거나 광과민성 발작 경험이 있으면 참여하지 마세요. 불편하면 즉시 중단하세요.</p>
             <p id="temporal-frame" class="fine-print">시작할 때 화면 갱신 간격을 확인합니다.</p>
+            <p class="fine-print">같은 1프레임 차이도 갱신 간격이 16.7 ms인 화면과 8.3 ms인 화면에서는 시간이 다릅니다. 정답 수와 함께 공개된 ms·프레임을 확인하세요. 어려워지는 경로가 달라 최소 정답 한 번만으로 두 시도를 비교하기는 어렵습니다.</p>
             <ol id="temporal-history" class="round-history" aria-label="시간차 라운드별 결과"></ol>
             <div id="temporal-result" class="result-note" role="status" hidden></div><button id="temporal-restart" class="button outline">새 테스트</button>
             <p class="fine-print">ESC로 중단합니다. 임계깜박이 주파수 검사 대신 시간 순서를 구분하는 실험이며, 결과는 이번 화면에서만 유지됩니다.</p>

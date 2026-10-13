@@ -1,5 +1,15 @@
 # Decision log
 
+## D19 — 재시작 결과와 측정값 읽기 / 2026-10-13
+
+- Context: 자동 구현 승인 범위에서 초기화·취소와 결과 해석을 점검했습니다. 청취 9라운드 종료 후 재시작하면 정답 수는 0인데 세션 요약은 이전 결과였습니다.
+- Options: 지난 세션 결과로 계속 표시; 새 테스트의 미완료 상태로 초기화.
+- Decision: 청취 재시작 때 session-hearing도 다른 테스트처럼 미완료로 초기화합니다. 기존 DOM/시계 더블에서 실제 9라운드 이벤트를 완료한 뒤 회귀 실패를 먼저 확인했습니다. 반응 중앙값·MAD·범위의 계산 예와 같은 기기/입력 방식 비교, 시간차의 프레임/ms 해석을 UI에 추가합니다.
+- Rationale: 현재 실행과 완료 결과가 일치하고, 유효한 큰 지연이나 서로 다른 프레임 간격을 숨기지 않습니다.
+- Affected: dist/src/app.js, dist/index.html, test/ui.test.js, tools/browser-audit-20261013.js, docs/verification.md.
+- Review: 시드·저장 형식·임상 해석·소리 크기·빛 자극·2초 재시작 간격은 변경하지 않습니다. 오디오 자동 검증은 음소거 또는 무음 더블입니다. 실제 청취/광출력/사람의 반응 능력 증거가 아닙니다.
+- Provenance: 200/205/210/215/2900의 중앙값 210/MAD 5는 challenges.js 및 기존 회귀 사례로 확인. 프레임 간격 설명은 [MDN requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)의 화면 갱신 주기와 일치하며 ms 예는 단순 간격 계산입니다.
+
 ## D18 — Temporal-order alternative to periodic flicker (2026-10-12)
 
 - Context: owner requests a CFF-like experiment and explicitly permits a similar task; approves publication after validation.

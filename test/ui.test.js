@@ -276,6 +276,28 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     assert.match(ids.get("memory-result").textContent, /최대 7칸/);
     click("memory-start"); // Even scripted activation cannot run a ninth round.
     assert.equal(ids.get("session-memory").textContent, "7/8");
+    // Audio is a silent test double. Complete a real nine-round UI session,
+    // then restart: the session strip must no longer show the old result.
+    window.AudioContext = class {
+      currentTime=0;sampleRate=48000;destination={};async resume(){}
+      createOscillator(){return {frequency:{value:0},connect(){},disconnect(){},start(){},stop(){}};}
+      createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}},connect(){},disconnect(){}};}
+    };
+    emit(tabs.find(t=>t.dataset.tab==="sound"),"click");
+    const beforeHearing=JSON.stringify([...storage]);
+    for(let i=0;i<9;i++){
+      click("hearing-play");await Promise.resolve();
+      tick(1100);await Promise.resolve();tick(600);await Promise.resolve();
+      tick(1100);await Promise.resolve();await Promise.resolve();
+      assert.equal(answers[2].disabled,false);
+      emit(answers[2],"click");click("hearing-next");
+    }
+    assert.equal(ids.get("session-hearing").textContent,"0/9");
+    click("hearing-restart");
+    assert.equal(ids.get("session-hearing").textContent,"—");
+    assert.equal(ids.get("hearing-score").textContent,"0");
+    assert.equal(ids.get("hearing-next").disabled,true);
+    assert.equal(JSON.stringify([...storage]),beforeHearing,"Hearing never writes history or progress");
   } finally {
     for (const [name, descriptor] of originals)
       if (descriptor) Object.defineProperty(globalThis, name, descriptor); else delete globalThis[name];

@@ -680,6 +680,7 @@ $("hearing-restart").addEventListener("click", () => {
   hearingIndex = 0;
   hearingResults = [];
   $("hearing-score").textContent = "0";
+  $("session-hearing").textContent = "—";
   renderHearing();
 });
 function switchTab(name) {
