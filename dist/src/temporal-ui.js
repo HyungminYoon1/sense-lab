@@ -1,9 +1,10 @@
 import { temporalRound, temporalStep, frameEstimate, temporalTiming, TEMPORAL_ROUNDS, TEMPORAL_COOLDOWN } from './temporal-model.js';
 import { seededRandom } from './challenges.js';
-export function setupTemporal() {
+export function setupTemporal(history) {
   const $ = id => document.getElementById(id);
   let active = false, phase = 'idle', frame = 0, timer = 0, generation = 0, lastStart = -Infinity;
   let index = 0, results = [], staircase = { level: 2, streak: 0 }, random, current, actualMs = null;
+  let mode = 'standard';
   const dots = [$('temporal-left-dot'), $('temporal-right-dot')];
   function clearDots() { for (const dot of dots) dot.classList.remove('shown'); }
   function availability() {
@@ -32,12 +33,15 @@ export function setupTemporal() {
     availability();
   }
   function reset() {
-    cancel(); random = seededRandom(crypto.getRandomValues(new Uint32Array(1))[0]); index = 0; results = []; staircase = { level: 2, streak: 0 };
+    cancel(); random = seededRandom(crypto.getRandomValues(new Uint32Array(1))[0]); index = 0; results = [];
+    mode = $('temporal-mode').value === 'challenge' ? 'challenge' : 'standard';
+    staircase = { level: mode === 'challenge' ? 5 : 2, streak: 0 }; $('temporal-mode').disabled = false; history.reset('temporal');
     $('temporal-score').textContent = '0'; $('session-temporal').textContent = '—'; render();
   }
   function play() {
     if (!active || phase !== 'idle' || !$('temporal-consent').checked || performance.now() - lastStart < TEMPORAL_COOLDOWN) return;
     lastStart = performance.now(); current = temporalRound(staircase.level, random);
+    $('temporal-mode').disabled = true;
     const token = ++generation, intervals = [], pulseGaps = [];
     let previous = null, tick = 0, calibrated = null, firstAt = null, secondAt = null;
     phase = 'calibrating'; availability(); $('temporal-feedback').textContent = '화면 갱신 간격을 확인한 뒤 두 점을 보여줍니다.'; $('temporal-stage-label').textContent = '가운데 +를 보세요';
@@ -55,7 +59,6 @@ export function setupTemporal() {
         const firstIndex = current.first === 'left' ? 0 : 1;
         if (tick === current.wait) { firstAt = at; dots[firstIndex].classList.add('shown'); }
         if (tick === current.wait + current.frames) { secondAt = at; dots[1 - firstIndex].classList.add('shown'); }
-        if (tick === current.wait + 10) dots[firstIndex].classList.remove('shown');
         if (tick === current.wait + current.frames + 10) {
           clearDots(); actualMs = temporalTiming(firstAt, secondAt, calibrated.interval, current.frames, pulseGaps);
           if (actualMs === null) { cancel(); $('temporal-feedback').textContent = '화면 지연이 생겨 이번 순서를 제외했습니다. 다시 시도하세요.'; return; }
@@ -81,10 +84,16 @@ export function setupTemporal() {
     if (index < TEMPORAL_ROUNDS - 1) { index++; render(); $('temporal-play').focus({ preventScroll: true }); return; }
     phase = 'complete'; $('temporal-next').disabled = true;
     const hits = results.filter(r => r.correct), minimum = Math.min(...hits.map(r => r.ms));
-    $('temporal-result').hidden = false; $('temporal-result').textContent = `${hits.length}/12 정답 · 이번 정답 중 최소 표시 시점 차이 ${hits.length ? minimum.toFixed(1) + ' ms' : '—'}. 화면 갱신 간격이 포함된 관찰 기록입니다.`;
+    const levels = [...new Set(results.map(r => r.frames))].sort((a,b) => b-a).map(frames => {
+      const trials = results.filter(r => r.frames === frames);
+      return `${frames}프레임 ${trials.filter(r => r.correct).length}/${trials.length}`;
+    }).join(' · ');
+    $('temporal-result').hidden = false; $('temporal-result').textContent = `${hits.length}/12 정답 · 최소 정답 간격 ${hits.length ? minimum.toFixed(1) + ' ms' : '—'}. 간격별 정답: ${levels}. 이 값은 클릭 속도가 아니라 두 점 사이의 표시 간격입니다.`;
+    history.offer('temporal', results, { mode });
     $('session-temporal').textContent = `${hits.length}/12`; availability();
   });
   $('temporal-restart').addEventListener('click', reset);
+  $('temporal-mode').addEventListener('change', reset);
   document.addEventListener('keydown', event => { if (active && event.key === 'Escape') cancel(); });
   reset(); return { select(name) { if (name !== 'temporal') { active = false; cancel(); } else { active = true; availability(); } }, cancel };
 }

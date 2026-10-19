@@ -26,8 +26,8 @@
     <header class="topbar">
       <a class="wordmark" href="./">SENSE<span>LAB</span><sup>PLAY</sup></a>
       <div class="header-links">
-        <a href="https://hyungminyoon1.github.io/packet-journey/"
-          >PACKET JOURNEY</a
+        <a href="https://hyungminyoon1.github.io/web-lab/"
+          >WEB LAB</a
         ><a
           href="https://github.com/HyungminYoon1/sense-lab"
           target="_blank"
@@ -54,7 +54,7 @@
           <small>05 / MEMORY</small><span>위치 순서 기억</span>
         </button>
         <button data-tab="temporal" aria-pressed="false">
-          <small>06 / TIMING</small><span>시간차 구분</span>
+          <small>06 / TIMING</small><span>시간 순서 구분</span>
         </button>
       </nav>
       <section data-panel="color" aria-labelledby="color-title">
@@ -63,6 +63,11 @@
             <h1 id="color-title">다른 색 한 칸 찾기</h1>
           </div>
           <span class="big-index" aria-hidden="true">01</span>
+        </div>
+        <div class="test-guide">
+          <div><h2>무엇을 해보나요</h2><p>여러 칸 사이의 작은 밝기 차이를 구별합니다. 다른 칸은 더 밝을 수도, 더 어두울 수도 있습니다.</p></div>
+          <div><h2>진행 방법</h2><p>다른 색 한 칸을 선택하고 정답을 확인하세요. 12문제를 풀며, 연속 정답이면 차이가 줄고 격자가 커집니다.</p></div>
+          <div><h2>결과 읽기</h2><p>정답 수와 맞힌 문제의 가장 작은 밝기 차이를 함께 봅니다. 같은 화면·밝기에서 비교하세요. 색각 이상을 판정하는 검사는 아닙니다.</p></div>
         </div>
         <div class="arena-layout">
           <div class="color-arena">
@@ -92,12 +97,14 @@
               두 번 연속 맞히면 두 단계 어렵게, 틀리면 한 단계 쉽게 갑니다.
               색과 위치는 매번 바뀝니다.
             </p>
+            <label for="color-mode">난이도</label><select id="color-mode"><option value="standard">기본 · ΔL 5%부터</option><option value="challenge">심화 · ΔL 1.2%부터</option></select>
             <ol
               id="color-history"
               class="round-history"
               aria-label="라운드별 결과"
             ></ol>
             <div id="color-result" class="result-note" role="status" hidden></div>
+            <button id="color-save" class="small-button outline" hidden>이 결과 저장</button><p id="color-save-status" class="fine-print" role="status"></p>
             <button id="color-restart" class="button outline">
               새 테스트
             </button>
@@ -158,6 +165,11 @@
           </div>
           <span class="big-index" aria-hidden="true">02</span>
         </div>
+        <div class="test-guide">
+          <div><h2>무엇을 해보나요</h2><p>신호를 본 뒤 손으로 반응하기까지 걸리는 시간을 확인합니다. 시작 버튼을 누른 시각부터 재는 것이 아닙니다.</p></div>
+          <div><h2>진행 방법</h2><p>시작 후 손을 놓고 기다리세요. 초록색 ‘지금!’에 한 번만 클릭·터치하거나 Space·Enter를 누릅니다. 미리 누르거나 연타하면 제외됩니다.</p></div>
+          <div><h2>결과 읽기</h2><p>정상 5회의 가운데 값이 중앙값입니다. MAD가 작을수록 응답이 일정했습니다. 최고 기록 하나보다 중앙값·범위를 함께 비교하세요.</p></div>
+        </div>
         <div class="arena-layout">
           <div class="reflex-arena">
             <button
@@ -186,6 +198,8 @@
               <strong id="reaction-score">—</strong><span>ms</span>
             </div>
             <p id="reaction-caption">기록 0 / 5 · 조기 클릭 0회</p>
+            <label for="reaction-mode">도전 방식</label><select id="reaction-mode"><option value="standard">기본 · 초록 신호에 반응</option><option value="challenge">집중 · 방해 신호 무시</option></select>
+            <p class="fine-print">집중 모드에서는 대기 중 ‘아직!’이라는 방해 신호가 나올 수 있습니다. 초록색 ‘지금!’에만 반응하세요. 기본 모드와 기록을 따로 비교하세요.</p>
             <ol id="reaction-history" class="reaction-history"></ol>
             <p class="result-note" id="reaction-result">
               신호 전 입력·유지·연타·100 ms 미만·3초 초과 응답은 제외합니다.
@@ -194,6 +208,7 @@
             <button id="reaction-restart" class="button outline">
               새 테스트
             </button>
+            <button id="reaction-save" class="small-button outline" hidden>이 결과 저장</button><p id="reaction-save-status" class="fine-print" role="status"></p>
             <p class="fine-print">
               MAD는 중앙값에서 떨어진 거리의 중앙값입니다. 작은 MAD는 이번 응답 시간들이 비슷했다는 뜻입니다.
             </p>
@@ -217,6 +232,11 @@
             <h1 id="hearing-title">소리가 있는 구간 고르기</h1>
           </div>
           <span class="big-index" aria-hidden="true">03</span>
+        </div>
+        <div class="test-guide">
+          <div><h2>무엇을 해보나요</h2><p>10–18 kHz의 높은 소리가 A·B 중 어느 구간에 있었는지 구별합니다. 한 구간은 소리, 다른 구간은 침묵입니다.</p></div>
+          <div><h2>진행 방법</h2><p>기기 음량을 낮춘 뒤 두 구간을 끝까지 들으세요. 들린 구간을 고르고, 들리지 않으면 ‘둘 다 안 들림’을 선택하세요. 답한 뒤 주파수를 공개합니다.</p></div>
+          <div><h2>결과 읽기</h2><p>구간 선택이 실제 재생과 얼마나 일치했는지 확인합니다. 기기의 재생 한계와 우연한 정답이 섞이므로 청력 나이로 환산하지 않습니다. 안 들려도 음량을 올리지 마세요.</p></div>
         </div>
         <div class="arena-layout">
           <div class="hearing-arena">
@@ -256,13 +276,15 @@
           <aside class="score-sheet">
             <p class="eyebrow">구간 선택 일치</p>
             <div class="score-number">
-              <strong id="hearing-score">0</strong><span>/ 9</span>
+              <strong id="hearing-score">0</strong><span id="hearing-total">/ 9</span>
             </div>
             <p>
               어느 구간에서 들었는지 고르면 주파수를 공개합니다. 애매하면 ‘둘 다
               안 들림’을 선택하세요.
             </p>
             <div id="hearing-history" class="frequency-history"></div>
+            <label for="hearing-mode">도전 방식</label><select id="hearing-mode"><option value="standard">기본 · 무작위 9문제</option><option value="challenge">반복 확인 · 무작위 18문제</option></select>
+            <p class="fine-print">반복 확인은 각 주파수를 두 번씩 섞어 제시합니다. 주파수별 응답이 두 번 모두 일치하는지 확인하세요. 음량과 주파수 상한은 높이지 않습니다.</p>
             <label for="hearing-volume"
               >앱 음량 <output id="hearing-volume-output">3</output></label
             ><input
@@ -276,6 +298,7 @@
               기기 음량을 낮추세요.<br />안 들려도 음량을 올리지 마세요. 불편하면 즉시 중단하세요.
             </p>
             <div id="hearing-result" class="result-note" hidden></div>
+            <button id="hearing-save" class="small-button outline" hidden>이 결과 저장</button><p id="hearing-save-status" class="fine-print" role="status"></p>
             <button id="hearing-restart" class="button outline">
               처음부터 다시 듣기
             </button>
@@ -315,12 +338,20 @@
           </div>
         </details>
       </section>
+      <section class="personal-history extra-history" data-history="sound" aria-labelledby="hearing-records-title" hidden>
+        <h2 id="hearing-records-title" tabindex="-1">고주파 청취 기록</h2><p id="hearing-trend"></p><div id="hearing-saved" class="saved-runs"></div>
+      </section>
       <section data-panel="pitch" aria-labelledby="pitch-title" hidden>
         <div class="section-title">
           <div>
             <h1 id="pitch-title">두 음의 높낮이 구분하기</h1>
           </div>
           <span class="big-index" aria-hidden="true">04</span>
+        </div>
+        <div class="test-guide">
+          <div><h2>무엇을 해보나요</h2><p>기준 음 A를 기억하고 다음 음 B가 조금 더 높은지, 낮은지 판단합니다. 음의 이름을 맞히는 절대음감 과제와 다릅니다.</p></div>
+          <div><h2>진행 방법</h2><p>두 음을 들은 뒤 높음·낮음을 선택하세요. 같은 문제는 다시 들을 수 있습니다. 연속 정답이면 두 음의 차이가 줄어듭니다.</p></div>
+          <div><h2>결과 읽기</h2><p>100센트는 반음, 10센트는 반음의 1/10입니다. 정답 수와 맞힌 최소 차이를 함께 보세요. 한 번 맞힌 작은 차이가 안정적인 구분 한계는 아닙니다.</p></div>
         </div>
         <div class="arena-layout">
           <div class="hearing-arena">
@@ -337,13 +368,18 @@
           <aside class="score-sheet">
             <p class="eyebrow">정답 수</p><div class="score-number"><strong id="pitch-score">0</strong><span>/ 12</span></div>
             <p>같은 길이의 두 음을 듣고 높낮이를 구분합니다. 두 번 연속 맞히면 차이가 작아지고, 틀리면 커집니다. 기준 음과 방향은 매번 바뀝니다.</p>
+            <label for="pitch-mode">난이도</label><select id="pitch-mode"><option value="standard">기본 · 75센트부터</option><option value="challenge">심화 · 15센트부터</option></select>
             <ol id="pitch-history" class="round-history" aria-label="음높이 라운드별 결과"></ol>
             <label for="pitch-volume">앱 음량 <output id="pitch-volume-output">3</output></label><input id="pitch-volume" type="range" min="0" max="10" value="3">
             <p class="listening-note">기기 음량을 낮추세요. 불편하면 즉시 중단하세요.</p>
             <div id="pitch-result" class="result-note" role="status" hidden></div><button id="pitch-restart" class="button outline">새 테스트</button>
+            <button id="pitch-save" class="small-button outline" hidden>이 결과 저장</button><p id="pitch-save-status" class="fine-print" role="status"></p>
             <p class="fine-print">100센트는 반음입니다. 음높이 차이를 구분하는 게임으로, 절대음감 검사와 다릅니다.</p>
           </aside>
         </div>
+      </section>
+      <section class="personal-history extra-history" data-history="pitch" aria-labelledby="pitch-records-title" hidden>
+        <h2 id="pitch-records-title" tabindex="-1">음높이 기록</h2><p id="pitch-trend"></p><div id="pitch-saved" class="saved-runs"></div>
       </section>
       <section data-panel="memory" aria-labelledby="memory-title" hidden>
         <div class="section-title">
@@ -352,10 +388,15 @@
           </div>
           <span class="big-index" aria-hidden="true">05</span>
         </div>
+        <div class="test-guide">
+          <div><h2>무엇을 해보나요</h2><p>잠깐 본 위치와 그 순서를 함께 기억합니다. 칸 번호를 외우는 대신 이동 경로와 모양에 집중하세요.</p></div>
+          <div><h2>진행 방법</h2><p>빛나는 위치를 끝까지 본 뒤 입력하세요. 공간 도전은 본 순서대로, 역순 도전은 마지막부터 거꾸로 선택합니다. 정답 순서 번호는 답을 마친 뒤 공개합니다.</p></div>
+          <div><h2>결과 읽기</h2><p>한 라운드의 위치와 순서를 모두 맞혀야 정답입니다. 맞힌 가장 긴 순서와 전체 정답 수를 함께 확인하고 같은 난이도끼리 비교하세요.</p></div>
+        </div>
         <div class="arena-layout">
           <div class="memory-arena">
-            <div class="arena-top"><span id="memory-round">ROUND 1 / 8</span><span>3 → 7칸</span></div>
-            <div id="memory-grid" class="memory-grid" aria-label="4행 4열 위치 순서 게임"></div>
+            <div class="arena-top"><span id="memory-round">ROUND 1 / 8</span><span id="memory-condition">공간 도전</span></div>
+            <div id="memory-grid" class="memory-grid" aria-label="위치 순서 게임"></div>
             <div class="arena-bottom">
               <span id="memory-status" role="status" aria-atomic="true">순서 보기를 누른 뒤 위치를 같은 순서로 선택하세요.</span>
             </div>
@@ -363,32 +404,42 @@
           <aside class="score-sheet">
             <p class="eyebrow">순서 일치</p>
             <div class="score-number"><strong id="memory-score">0</strong><span>/ 8</span></div>
-            <p>한 번에 한 위치가 표시됩니다. 끝나면 본 순서대로 누르세요.
+            <p>한 번에 한 위치가 표시됩니다. 공간 도전은 본 순서대로, 역순 도전은 거꾸로 누르세요.
               위치는 매번 새로 뽑고 한 순서 안에서는 중복되지 않습니다.</p>
             <p id="memory-progress">0 / 8 완료</p>
+            <label for="memory-mode">난이도와 규칙</label>
+            <select id="memory-mode"><option value="classic">연습 · 4×4 · 3–7칸</option><option value="spatial" selected>공간 도전 · 5×5 · 4–11칸</option><option value="reverse">역순 도전 · 6×6 · 6–13칸</option></select>
             <label for="memory-pace">보는 속도</label>
             <select id="memory-pace">
               <option value="850">보통 · 칸마다 0.85초</option>
               <option value="1500">천천히 · 칸마다 1.5초</option>
+              <option value="650" disabled>공간 도전 · 칸마다 0.65초</option>
+              <option value="450" disabled>역순 도전 · 칸마다 0.45초</option>
             </select>
             <button id="memory-start" class="button">순서 보기</button>
             <button id="memory-stop" class="button outline" disabled>이번 순서 중단</button>
             <div id="memory-result" class="result-note" role="status" hidden></div>
+            <button id="memory-save" class="small-button outline" hidden>이 결과 저장</button><p id="memory-save-status" class="fine-print" role="status"></p>
             <button id="memory-restart" class="button outline">새 테스트</button>
             <p class="fine-print">보기 중에는 입력을 받지 않습니다. 응답 시간 제한은 없으며
-              Tab으로 이동하고 Space·Enter로 선택할 수 있습니다. 위치 번호도
-              상태 안내로 읽어줍니다. 속도를 바꾸려면 새 테스트를 시작하세요.</p>
+              Tab으로 이동하고 Space·Enter로 선택할 수 있습니다. 역순 도전은 마지막 위치부터 거꾸로 입력합니다.
+              난이도를 바꾸려면 새 테스트를 시작하세요. 숫자는 답을 마친 뒤 정답 순서에만 표시합니다.</p>
           </aside>
         </div>
         <section class="personal-history" aria-labelledby="memory-records-title">
           <h2 id="memory-records-title" tabindex="-1">순서 기억 기록</h2>
           <p id="memory-trend"></p>
-          <p class="fine-print">같은 보기 속도끼리 최근 정답 수를 비교합니다. 기록을 펼치면 순서 길이별 결과를 볼 수 있습니다.</p>
+            <p class="fine-print">같은 격자·순서 규칙·보기 속도끼리 비교하세요. 이전 버전의 번호 표시 기록은 구분해서 남깁니다.</p>
           <div id="memory-saved" class="saved-runs"></div>
         </section>
       </section>
       <section data-panel="temporal" aria-labelledby="temporal-title" hidden>
         <div class="section-title"><div><h1 id="temporal-title">어느 점이 먼저 나타났나요?</h1></div><span class="big-index" aria-hidden="true">06</span></div>
+        <div class="test-guide">
+          <div><h2>무엇을 해보나요</h2><p>아주 짧은 시간차를 두고 나타나는 두 점의 선후를 구별합니다. 빨리 누르는 능력이 아니라, 어느 쪽이 먼저였는지 알아차리는 과제입니다.</p></div>
+          <div><h2>진행 방법</h2><p>가운데 +를 보며 기다린 뒤 먼저 밝아진 쪽을 선택하세요. 답은 천천히 골라도 됩니다. 두 점이 동시에 사라진 후에 답을 받습니다.</p></div>
+          <div><h2>결과 읽기</h2><p>60 Hz 화면의 2프레임은 약 33 ms입니다. 차이가 작을수록 어렵습니다. 결과의 ms는 두 점의 표시 간격이며, 클릭 반응시간이나 임계깜박이 주파수가 아닙니다.</p></div>
+        </div>
         <div class="arena-layout">
           <div class="temporal-arena">
             <div class="arena-top"><span id="temporal-round">ROUND 01 / 12</span><span>시간 순서</span></div>
@@ -405,15 +456,21 @@
           <aside class="score-sheet">
             <p class="eyebrow">정답 수</p><div class="score-number"><strong id="temporal-score">0</strong><span>/ 12</span></div>
             <p>작은 두 점이 한 번씩 나타납니다. 두 번 연속 맞히면 시간차가 줄고, 틀리면 커집니다. 순서는 매번 바뀝니다.</p>
+            <label for="temporal-mode">난이도</label><select id="temporal-mode"><option value="standard">기본 · 7프레임부터</option><option value="challenge">심화 · 3프레임부터</option></select>
+            <p class="fine-print">심화 모드는 처음부터 작은 간격으로 시작해 최소 1프레임에 도전합니다. 한 프레임보다 짧은 간격을 표시했다고 계산하지 않습니다.</p>
             <label class="temporal-consent" for="temporal-consent"><input id="temporal-consent" type="checkbox"><span>짧은 빛 자극 안내를 읽었습니다.</span></label>
             <p class="listening-note">빛 자극에 민감하거나 광과민성 발작 경험이 있으면 참여하지 마세요. 불편하면 즉시 중단하세요.</p>
             <p id="temporal-frame" class="fine-print">시작할 때 화면 갱신 간격을 확인합니다.</p>
             <p class="fine-print">같은 1프레임 차이도 갱신 간격이 16.7 ms인 화면과 8.3 ms인 화면에서는 시간이 다릅니다. 정답 수와 함께 공개된 ms·프레임을 확인하세요. 어려워지는 경로가 달라 최소 정답 한 번만으로 두 시도를 비교하기는 어렵습니다.</p>
             <ol id="temporal-history" class="round-history" aria-label="시간차 라운드별 결과"></ol>
             <div id="temporal-result" class="result-note" role="status" hidden></div><button id="temporal-restart" class="button outline">새 테스트</button>
-            <p class="fine-print">ESC로 중단합니다. 임계깜박이 주파수 검사 대신 시간 순서를 구분하는 실험이며, 결과는 이번 화면에서만 유지됩니다.</p>
+            <button id="temporal-save" class="small-button outline" hidden>이 결과 저장</button><p id="temporal-save-status" class="fine-print" role="status"></p>
+            <p class="fine-print">ESC로 중단합니다. 답을 고르는 속도는 채점하지 않습니다. 화면 지연이 큰 시도는 제외하고 다시 제시합니다.</p>
           </aside>
         </div>
+      </section>
+      <section class="personal-history extra-history" data-history="temporal" aria-labelledby="temporal-records-title" hidden>
+        <h2 id="temporal-records-title" tabindex="-1">시간 순서 기록</h2><p id="temporal-trend"></p><div id="temporal-saved" class="saved-runs"></div>
       </section>
       <div class="session-strip">
         <span>이번 세션</span
@@ -422,15 +479,18 @@
         ><span>청취 <strong id="session-hearing">—</strong></span>
         <span>순서 <strong id="session-memory">—</strong></span>
         <span>음높이 <strong id="session-pitch">—</strong></span>
-        <span>시간차 <strong id="session-temporal">—</strong></span>
+        <span>시간 순서 <strong id="session-temporal">—</strong></span>
       </div>
       <section class="history-controls" aria-labelledby="history-title">
         <h2 id="history-title">저장 기록</h2>
-        <p>색감·반응·순서 기억은 테스트별 최근 20회를 이 브라우저에 저장합니다.
-          중도에 끝낸 테스트와 청취·음높이·시간차는 저장하지 않습니다. 반응은 최대 15시도까지 마친 기록을 저장합니다.</p>
-        <p class="fine-print">갤러리에는 완료한 테스트 종류 수(최대 3)만 공유합니다.
+        <p>상세 결과는 ‘이 결과 저장’을 누른 경우에만 이 브라우저에 남습니다. 새 기록은 테스트별 최근 20회까지 보관하며 기존 기록도 유지합니다.
+          저장하지 않은 결과는 새 테스트나 페이지 새로고침 시 사라집니다.</p>
+        <p id="completion-status" role="status">0/6종 체험 완료</p>
+        <p class="fine-print">테스트를 끝내면 점수와 무관하게 완료 여부만 자동으로 남깁니다. 반응속도는 정상 응답 5회가 필요합니다. 중단한 테스트는 완료로 세지 않습니다.
+          상세 기록 삭제와 완료 표시 초기화는 별개입니다.
           같은 사이트 출처의 앱은 브라우저 저장 공간에 접근할 수 있습니다. 공용 기기에서는 사용 후 기록을 삭제하세요.</p>
-        <button id="history-clear-all" class="small-button outline">전체 기록 삭제</button>
+        <button id="history-clear-all" class="small-button outline">저장 기록 모두 삭제</button>
+        <button id="completion-clear" class="small-button outline">체험 완료 표시 초기화</button>
         <p id="history-status" role="status" aria-atomic="true"></p>
       </section>
       <details class="about">

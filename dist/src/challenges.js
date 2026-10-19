@@ -9,6 +9,24 @@ export const REACTION_RULES = Object.freeze({
   minimum: 100, maximum: 3000, settle: 250, trials: 5, attempts: 15,
 });
 export const MEMORY_LENGTHS = Object.freeze([3, 3, 4, 4, 5, 5, 6, 7]);
+export const MEMORY_PROFILES = Object.freeze({
+  classic: Object.freeze({ label: "연습", columns: 4, lengths: MEMORY_LENGTHS, pace: 850, reverse: false }),
+  spatial: Object.freeze({ label: "공간 도전", columns: 5, lengths: Object.freeze([4, 5, 6, 7, 8, 9, 10, 11]), pace: 650, reverse: false }),
+  reverse: Object.freeze({ label: "역순 도전", columns: 6, lengths: Object.freeze([6, 7, 8, 9, 10, 11, 12, 13]), pace: 450, reverse: true }),
+});
+export function memoryProfile(mode) {
+  if (!Object.hasOwn(MEMORY_PROFILES, mode)) throw new TypeError("Invalid memory mode");
+  return MEMORY_PROFILES[mode];
+}
+export function hearingPlan(mode = "standard", random = Math.random) {
+  if (!["standard", "challenge"].includes(mode)) throw new TypeError("Invalid hearing mode");
+  const plan = mode === "challenge" ? [...HEARING_FREQUENCIES, ...HEARING_FREQUENCIES] : [...HEARING_FREQUENCIES];
+  for (let i = plan.length - 1; i > 0; i--) {
+    const j = Math.floor(sample(random) * (i + 1));
+    [plan[i], plan[j]] = [plan[j], plan[i]];
+  }
+  return plan;
+}
 function sample(random) {
   const value = random();
   if (!Number.isFinite(value) || value < 0 || value >= 1)
@@ -54,6 +72,12 @@ export function colorStep(state, correct) {
 }
 export function reactionDelay(random = Math.random) {
   return 1600 + Math.floor(sample(random) * 2701);
+}
+export function reactionPlan(mode, random = Math.random) {
+  if (!["standard", "challenge"].includes(mode)) throw new TypeError("Invalid reaction mode");
+  if (mode === "standard") return { delay: reactionDelay(random), cueAt: null };
+  const delay = 1600 + Math.floor(sample(random) * 4901);
+  return { delay, cueAt: sample(random) < 0.7 ? Math.floor(delay * 0.4) : null };
 }
 function time(now) {
   if (!Number.isFinite(now) || now < 0) throw new TypeError("Invalid time");
@@ -103,19 +127,22 @@ export function reactionSummary(values) {
     worst: values.length ? Math.max(...values) : null,
   };
 }
-export function makeMemoryRound(round, random = Math.random) {
-  if (!Number.isInteger(round) || round < 0 || round >= MEMORY_LENGTHS.length)
+export function makeMemoryRound(round, random = Math.random, mode = "classic") {
+  const profile = memoryProfile(mode);
+  if (!Number.isInteger(round) || round < 0 || round >= profile.lengths.length)
     throw new TypeError("Invalid memory round");
-  const cells = Array.from({ length: 16 }, (_, i) => i);
+  const cells = Array.from({ length: profile.columns ** 2 }, (_, i) => i);
   for (let i = cells.length - 1; i > 0; i--) {
     const j = Math.floor(sample(random) * (i + 1));
     [cells[i], cells[j]] = [cells[j], cells[i]];
   }
-  return { phase: "showing", sequence: cells.slice(0, MEMORY_LENGTHS[round]), cursor: 0 };
+  return { phase: "showing", sequence: cells.slice(0, profile.lengths[round]), cursor: 0, columns: profile.columns, reverse: profile.reverse };
 }
 export function memoryInput(state, cell) {
-  if (!Number.isInteger(cell) || cell < 0 || cell > 15) throw new TypeError("Invalid cell");
+  const columns = state.columns ?? 4;
+  if (![4, 5, 6].includes(columns) || !Number.isInteger(cell) || cell < 0 || cell >= columns ** 2) throw new TypeError("Invalid cell");
   if (state.phase !== "recall") return state;
-  const correct = cell === state.sequence[state.cursor], cursor = state.cursor + 1;
+  const index = state.reverse ? state.sequence.length - 1 - state.cursor : state.cursor;
+  const correct = cell === state.sequence[index], cursor = state.cursor + 1;
   return { ...state, cursor, phase: !correct ? "miss" : cursor === state.sequence.length ? "hit" : "recall" };
 }

@@ -1,92 +1,95 @@
-import { TESTS, summarizeRun, personalTrend, achievementCount } from "./history.js";
-import { createHistoryStore } from "./history-store.js";
-import { writeProgress } from "./progress.js";
+import { summarizeRun, HISTORY_KEY } from "./history.js";
+import { createRecordStore } from "./record-store.js";
+import { MODES, RECORD_KEY, validateRecord, isComplete } from "./record-model.js";
+import { createCompletionStore, COMPLETION_KEY } from "./completion.js";
+import { memoryProfile } from "./challenges.js";
 
-export function setupHistory(provider = () => window.localStorage) {
-  const store = createHistoryStore(provider), $ = (id) => document.getElementById(id);
-  const labels = { color: "색감", reaction: "반응", memory: "순서 기억" };
-  const notice = (message) => { $("history-status").textContent = message; };
-  const problem = (reason) => reason === "corrupt" ?
-    "저장 기록의 형식을 읽을 수 없습니다. 전체 기록 삭제 후 다시 저장할 수 있습니다." :
-    "기록을 저장하거나 삭제하지 못했습니다. 브라우저의 저장 공간 설정을 확인하세요.";
-  function sync(history) {
-    const completed = achievementCount(history);
-    const dates = TESTS.flatMap((mode) => history.runs[mode].filter((run) => mode !== "reaction" || summarizeRun(mode, run).complete).map((run) => run.completedAt));
-    return writeProgress(provider, completed ? { completed, total: 3, updatedAt: dates.sort().at(-1) } : null);
+export function setupHistory(provider=()=>window.localStorage) {
+  const store=createRecordStore(provider), completion=createCompletionStore(provider), pending=new Map();
+  const $=id=>document.getElementById(id);
+  const labels={color:"색감",reaction:"반응",hearing:"고주파 청취",pitch:"음높이",memory:"순서 기억",temporal:"시간 순서"};
+  const notice=message=>{$("history-status").textContent=message;};
+  function condition(kind,run,legacy) {
+    if(legacy) return kind==="memory"?`이전 방식 · ${run.pace} ms/칸`:"이전 기록";
+    return kind==="memory"?`${memoryProfile(run.mode).label} · ${run.pace} ms/칸`:run.mode==="challenge"?"심화":"기본";
   }
-  function summaryText(mode, run) {
-    const s = summarizeRun(mode, run);
-    if (mode === "color") return `${s.hits}/12 정답 · 최소 정답 ΔL ${s.smallest === null ? "—" : `${s.smallest}%`}`;
-    if (mode === "memory") return `${s.hits}/8 일치 · 최대 ${s.longest}칸 · ${s.pace === 850 ? "보통" : "천천히"}`;
-    return `${s.complete ? "완료" : "5회 미달"} · ${s.count}/5회 · 중앙값 ${s.median ?? "—"} ms · MAD ${s.mad ?? "—"} ms · 범위 ${s.best ?? "—"}–${s.worst ?? "—"} ms · 조기 ${s.early} · 기타 제외 ${s.excluded}`;
+  function summary(kind,run) {
+    if(kind==="reaction") {
+      const s=summarizeRun("reaction",{id:run.id,completedAt:run.completedAt,rounds:run.rounds});
+      return `${s.count}/5 정상 · 중앙값 ${s.median??"—"} ms · MAD ${s.mad??"—"} ms · 범위 ${s.best??"—"}–${s.worst??"—"} ms`;
+    }
+    const hits=run.rounds.filter(r=>r.correct);
+    const tail=kind==="memory"?` · 최대 ${Math.max(0,...hits.map(r=>r.length))}칸`:kind==="color"?` · 최소 ΔL ${hits.length?Math.min(...hits.map(r=>r.delta))+"%":"—"}`:
+      kind==="pitch"?` · 최소 ${hits.length?Math.min(...hits.map(r=>r.cents))+"센트":"—"}`:kind==="temporal"?` · 최소 ${hits.length?Math.min(...hits.map(r=>r.ms))+" ms":"—"}`:"";
+    return `${hits.length}/${run.rounds.length} ${kind==="hearing"?"구간 일치":"정답"}${tail}`;
   }
-  function roundText(mode, round, index) {
-    const prefix = `${index + 1}회 · `;
-    if (mode === "color") return `${prefix}${round.correct ? "정답" : "오답"} · 단계 ${round.level + 1} · ΔL ${round.delta}%`;
-    if (mode === "memory") return `${prefix}${round.length}칸 · ${round.correct ? "순서 일치" : "불일치"}`;
-    return prefix + ({ valid: `${round.elapsed} ms`, early: "신호 전 입력", excluded: "입력 제외", cancelled: "중단" })[round.outcome];
+  function roundText(kind,r,i) {
+    if(kind==="reaction") return `${i+1}회 · `+({valid:`${r.elapsed} ms`,early:"신호 전 입력",excluded:"입력 제외",cancelled:"중단"})[r.outcome];
+    const detail=kind==="color"?`단계 ${r.level+1} · ΔL ${r.delta}%`:kind==="memory"?`${r.length}칸`:
+      kind==="hearing"?`${r.frequency/1000} kHz · ${r.heard==="neither"?"안 들림":r.heard.toUpperCase()}`:kind==="pitch"?`${r.cents}센트`:`${r.ms} ms · ${r.frames}프레임`;
+    return `${i+1}회 · ${r.correct?"정답":"오답"} · ${detail}`;
   }
-  function render(history) {
-    for (const mode of TESTS) {
-      const runs = history.runs[mode], trend = personalTrend(mode, runs);
-      $(mode + "-trend").textContent = !trend ? "저장된 완료 기록이 없습니다." :
-        `최근 ${trend.recent.length}회 ${mode === "reaction" ? "중앙값(ms)" : "정답 수"}: ${trend.recent.join(" → ")}${trend.change === null ? " · 비교할 이전 기록이 없습니다." : ` · 이전 대비 ${trend.change > 0 ? "+" : ""}${trend.change}${mode === "reaction" ? " ms" : "개"}`}${mode === "memory" ? ` · ${trend.pace === 850 ? "보통" : "천천히"} 보기끼리 비교` : ""}`;
-      $(mode + "-saved").replaceChildren(...[...runs].reverse().map((run) => {
-        const card = document.createElement("div");
-        card.className = "saved-run";
-        const details = document.createElement("details"), title = document.createElement("summary");
-        const date = new Date(run.completedAt).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" });
-        title.textContent = `${date} · ${summaryText(mode, run)}`;
-        const rounds = document.createElement("ol");
-        rounds.className = "saved-rounds";
-        rounds.append(...run.rounds.map((round, index) => Object.assign(document.createElement("li"), { textContent: roundText(mode, round, index) })));
-        details.append(title, rounds);
-        const remove = document.createElement("button");
-        remove.className = "small-button outline";
-        remove.textContent = "이 기록 삭제";
-        remove.setAttribute("aria-label", `${labels[mode]} ${date} 기록 삭제`);
-        remove.addEventListener("click", () => {
-          const result = store.remove(mode, run.id);
-          if (!result.ok) { notice(problem(result.reason)); return; }
-          const synced = sync(result.history);
-          render(result.history);
-          notice(synced ? "기록을 삭제했습니다." : "기록을 삭제했지만 완료 요약을 갱신하지 못했습니다. 전체 기록 삭제로 다시 시도하세요.");
-          $(mode + "-records-title").focus({ preventScroll: true });
+  function renderCompletion() {
+    const state=completion.read();
+    $("completion-status").textContent=state.ok?`${Object.keys(state.value.tests).length}/6종 체험 완료`:"완료 표시를 읽을 수 없습니다. 저장 공간 설정을 확인하거나 완료 표시를 초기화하세요.";
+  }
+  function render() {
+    const data=store.read();
+    for(const kind of MODES) {
+      const rows=[...(data.legacy.runs[kind]||[]).map(run=>({run,legacy:true})),...data.records.runs[kind].map(run=>({run,legacy:false}))];
+      rows.sort((a,b)=>b.run.completedAt.localeCompare(a.run.completedAt));
+      $(kind+"-trend").textContent=rows.length?`${rows.length}개 저장 기록 · 같은 난이도와 기기에서 비교하세요.`:"저장한 결과가 없습니다. 테스트를 마친 뒤 원하는 결과만 저장할 수 있습니다.";
+      $(kind+"-saved").replaceChildren(...rows.map(({run,legacy})=>{
+        const card=document.createElement("div"), details=document.createElement("details"), title=document.createElement("summary"), list=document.createElement("ol"), remove=document.createElement("button");
+        card.className="saved-run"; list.className="saved-rounds";
+        const date=new Date(run.completedAt).toLocaleString("ko-KR",{dateStyle:"short",timeStyle:"short"});
+        title.textContent=`${date} · ${condition(kind,run,legacy)} · ${summary(kind,run)}`;
+        list.append(...run.rounds.map((r,i)=>Object.assign(document.createElement("li"),{textContent:roundText(kind,r,i)})));
+        details.append(title,list); remove.className="small-button outline"; remove.textContent="이 기록 삭제";
+        remove.setAttribute("aria-label",`${labels[kind]} ${date} 기록 삭제`);
+        remove.addEventListener("click",()=>{
+          const result=store.remove(kind,run.id,legacy);
+          if(!result.ok) {notice("기록을 삭제하지 못했습니다. 원본은 확인 없이 덮어쓰지 않습니다.");return;}
+          render(); notice("기록을 삭제했습니다. 체험 완료 표시는 유지됩니다."); $(kind+"-records-title").focus({preventScroll:true});
         });
-        card.append(details, remove);
-        return card;
+        card.append(details,remove); return card;
       }));
     }
+    if(!data.ok || !data.legacyOk) notice("일부 저장 기록을 읽을 수 없습니다. 읽을 수 있는 기록만 표시하며 원본은 보존합니다.");
+    renderCompletion();
   }
-  const initial = store.read();
-  render(initial.history);
-  if (!initial.ok) notice(problem(initial.reason));
-  $("history-clear-all").addEventListener("click", () => {
-    const result = store.clear();
-    // Independently try removing our aggregate even if private deletion failed.
-    const synced = writeProgress(provider, null);
-    if (result.ok) render(result.history);
-    notice(!result.ok ? problem(result.reason) : synced ? "저장 기록과 완료 요약을 삭제했습니다." :
-      "저장 기록은 삭제했습니다. 완료 요약을 삭제하지 못했습니다. 다시 삭제를 눌러주세요.");
+  for(const kind of MODES) $(kind+"-save").addEventListener("click",()=>{
+    const run=pending.get(kind); if(!run) return;
+    const result=store.add(kind,run);
+    if(!result.ok) {$(kind+"-save-status").textContent="저장하지 못했습니다. 저장 공간을 확인한 뒤 다시 시도하세요.";return;}
+    pending.delete(kind); $(kind+"-save").disabled=true; $(kind+"-save-status").textContent="이 브라우저에 저장했습니다."; render();
   });
-  window.addEventListener("storage", (event) => {
-    if (event.key !== "sense-lab-history-v1" && event.key !== null) return;
-    const result = store.read();
-    render(result.history);
-    notice(result.ok ? "다른 탭의 기록 변경을 반영했습니다." : problem(result.reason));
+  const initial=store.read(), imported=completion.bootstrap(initial);
+  render();
+  if(!imported.ok || imported.synced===false) notice("완료 표시를 갱신하지 못했습니다. 테스트와 상세 기록 저장은 따로 사용할 수 있습니다.");
+  $("history-clear-all").addEventListener("click",()=>{
+    const result=store.clear(); render();
+    notice(result.ok?"저장 기록을 삭제했습니다. 체험 완료 표시는 유지됩니다.":"일부 기록을 삭제하지 못했습니다. 다시 시도하세요.");
   });
+  $("completion-clear").addEventListener("click",()=>{
+    const result=completion.clear(); renderCompletion();
+    notice(!result.ok?"완료 표시를 초기화하지 못했습니다.":result.synced?"완료 표시를 초기화했습니다. 저장 기록은 유지됩니다.":"완료 표시를 초기화했지만 WEB LAB 요약 갱신은 실패했습니다. 다시 시도하세요.");
+  });
+  window.addEventListener("storage",event=>{if([HISTORY_KEY,RECORD_KEY,COMPLETION_KEY,null].includes(event.key)) render();});
   return {
-    record(mode, rounds, pace) {
-      let result;
+    reset(kind) {pending.delete(kind); $(kind+"-save").hidden=true; $(kind+"-save").disabled=false; $(kind+"-save-status").textContent="";},
+    offer(kind,rounds,options={}) {
       try {
-        const run = { id: crypto.randomUUID(), completedAt: new Date().toISOString(), rounds: rounds.map((round) => ({ ...round })) };
-        if (mode === "memory") run.pace = pace;
-        result = store.add(mode, run);
-      } catch { result = { ok: false, reason: "unavailable" }; }
-      if (!result.ok) { notice(problem(result.reason)); return; }
-      const synced = sync(result.history);
-      render(result.history);
-      notice(synced ? "이번 기록을 저장했습니다." : "이번 기록은 저장했습니다. 완료 요약을 갱신하지 못했습니다.");
+        const run={id:crypto.randomUUID(),completedAt:new Date().toISOString(),mode:options.mode||"standard",rounds:rounds.map(r=>({...r}))};
+        if(kind==="memory") run.pace=options.pace;
+        validateRecord(kind,run); pending.set(kind,run);
+        $(kind+"-save").hidden=false; $(kind+"-save").disabled=false;
+        $(kind+"-save-status").textContent="상세 결과는 아직 저장하지 않았습니다.";
+        if(isComplete(kind,run)) {
+          const result=completion.mark(kind,run.completedAt); renderCompletion();
+          if(!result.ok || !result.synced) notice("테스트는 완료했습니다. 완료 표시를 저장하거나 WEB LAB에 반영하지 못했습니다.");
+        }
+      } catch {notice("이번 결과를 기록 형식으로 확인하지 못했습니다. 화면의 결과는 확인할 수 있습니다.");}
     },
   };
 }

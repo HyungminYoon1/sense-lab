@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { HISTORY_KEY } from "../dist/src/history.js";
+import { RECORD_KEY as HISTORY_KEY } from "../dist/src/record-model.js";
 import { PROGRESS_KEY } from "../dist/src/progress.js";
 
 // This small DOM/clock double exercises the real app event wiring. It is not
@@ -66,6 +66,7 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
   }
   ids.get("wave-type").value = "sine";
   ids.get("memory-pace").value = "850";
+  ids.get("memory-mode").value = "classic";
   for (const id of ["reaction-symbol", "reaction-message", "reaction-instruction"])
     ids.get("reaction-zone").append(ids.get(id));
   const document = new Element(), window = new Element();
@@ -130,6 +131,8 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     }
     assert.equal(ids.get("color-grid").children.length, 36);
     assert.equal(ids.get("session-color").textContent, "12/12");
+    assert.equal(storage.has(HISTORY_KEY), false, "completion does not automatically save detailed records");
+    click("color-save");
     assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.color.length, 1);
     assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 1);
     click("color-next");
@@ -178,6 +181,8 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     assert.equal(phase(), "complete");
     assert.equal(ids.get("reaction-score").textContent, 210);
     assert.match(ids.get("reaction-result").textContent, /MAD\) 5 ms/);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 0);
+    click("reaction-save");
     assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 1);
     assert.deepEqual(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction[0].rounds.map((r) => r.elapsed), [200, 205, 210, 215, 2900]);
     assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 2);
@@ -190,6 +195,7 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     for (let i = 0; i < 15; i++) { pointer(); pointer(); if (i < 14) click("reaction-next"); }
     assert.equal(phase(), "exhausted");
     assert.equal(ids.get("reaction-next").hidden, true);
+    click("reaction-save");
     assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 2);
     assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction[1].rounds.length, 15);
     assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 2);
@@ -231,15 +237,17 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     }
     assert.equal(ids.get("memory-score").textContent, 7);
     assert.equal(ids.get("session-memory").textContent, "7/8");
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.memory.length, 0);
+    click("memory-save");
     assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.memory.length, 1);
     assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 3);
     assert.equal(ids.get("memory-saved").children.length, 1);
-    assert.match(ids.get("memory-trend").textContent, /보통 보기끼리 비교/);
+    assert.match(ids.get("memory-trend").textContent, /같은 난이도와 기기/);
     // Remove just the completed reaction record; the exhausted record remains.
     const completedReactionDelete = ids.get("reaction-saved").children[1].children[1];
     emit(completedReactionDelete, "click");
     assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.reaction.length, 1);
-    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 2);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 3, "deleting optional history does not erase completion");
     assert.equal(document.activeElement, ids.get("reaction-records-title"));
     const progress = JSON.parse(storage.get(PROGRESS_KEY));
     progress.apps["packet-journey"] = { completed: 1, total: 7, updatedAt: "2026-10-09T10:00:00.000Z" };
@@ -247,6 +255,8 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
     storage.set("unrelated", "preserve");
     click("history-clear-all");
     assert.equal(storage.has(HISTORY_KEY), false);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed, 3);
+    click("completion-clear");
     assert.deepEqual(Object.keys(JSON.parse(storage.get(PROGRESS_KEY)).apps), ["packet-journey"]);
     assert.equal(storage.get("unrelated"), "preserve");
     assert.equal(ids.get("color-saved").children.length, 0);
@@ -261,13 +271,14 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
       click("color-next");
     }
     assert.equal(ids.get("session-color").textContent, "12/12");
+    click("color-save");
     assert.equal(storage.has(HISTORY_KEY), false);
     assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"], undefined);
-    assert.match(ids.get("history-status").textContent, /저장하거나 삭제하지 못했습니다/);
+    assert.match(ids.get("color-save-status").textContent, /저장하지 못했습니다/);
     window.localStorage.setItem = (key, value) => storage.set(key, value);
     storage.set(HISTORY_KEY, "{invalid");
     window.listeners.find((l) => l.name === "storage").callback({ key: HISTORY_KEY });
-    assert.match(ids.get("history-status").textContent, /형식을 읽을 수 없습니다/);
+    assert.match(ids.get("history-status").textContent, /일부 저장 기록을 읽을 수 없습니다/);
     assert.equal(storage.get(HISTORY_KEY), "{invalid");
     click("history-clear-all");
     assert.equal(storage.has(HISTORY_KEY), false);
@@ -284,7 +295,7 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
       createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}},connect(){},disconnect(){}};}
     };
     emit(tabs.find(t=>t.dataset.tab==="sound"),"click");
-    const beforeHearing=JSON.stringify([...storage]);
+    const peerBeforeHearing=JSON.parse(storage.get(PROGRESS_KEY)).apps["packet-journey"];
     for(let i=0;i<9;i++){
       click("hearing-play");await Promise.resolve();
       tick(1100);await Promise.resolve();tick(600);await Promise.resolve();
@@ -293,11 +304,16 @@ test("test-double: real UI rejects held/mixed/repeated input, aggregates once, c
       emit(answers[2],"click");click("hearing-next");
     }
     assert.equal(ids.get("session-hearing").textContent,"0/9");
+    assert.equal(storage.has(HISTORY_KEY),false);
+    assert.equal(JSON.parse(storage.get(PROGRESS_KEY)).apps["sense-lab"].completed,1);
+    click("hearing-save");
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.hearing.length,1);
     click("hearing-restart");
     assert.equal(ids.get("session-hearing").textContent,"—");
     assert.equal(ids.get("hearing-score").textContent,"0");
     assert.equal(ids.get("hearing-next").disabled,true);
-    assert.equal(JSON.stringify([...storage]),beforeHearing,"Hearing never writes history or progress");
+    assert.deepEqual(JSON.parse(storage.get(PROGRESS_KEY)).apps["packet-journey"],peerBeforeHearing);
+    assert.equal(JSON.parse(storage.get(HISTORY_KEY)).runs.hearing.length,1,"reset preserves explicit saved result");
   } finally {
     for (const [name, descriptor] of originals)
       if (descriptor) Object.defineProperty(globalThis, name, descriptor); else delete globalThis[name];

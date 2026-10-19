@@ -1,5 +1,7 @@
 # 검증 기록
 
+[2026-10-19 설명·난이도·선택 저장과 6종 완료 표시](sense-upgrade-20261019.md)
+
 [2026-10-13 systematic edge cases — new executable tests, red/green evidence, browser scope](edge-cases-20261013.md)
 
 ## 2026-10-13 초기화·측정값 해석 — LOCAL / BROWSER_LOCAL

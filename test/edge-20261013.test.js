@@ -47,9 +47,9 @@ test("EDGE shared readback failure and repeat clear preserve peer",()=>{
   const data=new Map(),s={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
   const peer={completed:1,total:3,updatedAt:"2026-10-13T00:00:00.000Z"};
   s.setItem(PROGRESS_KEY,JSON.stringify({version:1,apps:{"traffic-lab":peer}}));
-  assert.equal(writeProgress(()=>s,peer),true);
+  assert.equal(writeProgress(()=>s,{...peer,total:6}),true);
   s.setItem=()=>{};
-  assert.equal(writeProgress(()=>s,{...peer,completed:2}),false);
+  assert.equal(writeProgress(()=>s,{...peer,total:6,completed:2}),false);
   assert.equal(writeProgress(()=>s,null),false);
   assert.deepEqual(JSON.parse(s.getItem(PROGRESS_KEY)).apps["traffic-lab"],peer);
 });

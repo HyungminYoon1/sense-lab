@@ -25,7 +25,7 @@ export function parseProgress(raw) {
 // This service can mutate only its own entry. Other allowlisted summaries survive.
 export function writeProgress(provider, summary) {
   try {
-    if (summary !== null && (!validSummary(summary) || summary.total !== 3)) return false;
+    if (summary !== null && (!validSummary(summary) || summary.total !== 6)) return false;
     const storage = provider(), progress = parseProgress(storage.getItem(PROGRESS_KEY));
     if (summary === null) delete progress.apps["sense-lab"];
     else progress.apps["sense-lab"] = { ...summary };

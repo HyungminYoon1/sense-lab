@@ -1,5 +1,15 @@
 # Decision log
 
+## D21 — Optional detailed results, six-kind completion and harder tasks / 2026-10-19
+
+- Context: owner questioned unexplained PACKET JOURNEY navigation, three-kind gallery count despite six tests, numbered memory cues and temporal-test purpose. They explicitly approved optional per-result saves, automatic minimal six-kind completion, preservation of existing records, improved explanation/difficulty and publication after verification.
+- Options: persist all six detailed histories automatically; keep three-kind counts with a label; separate optional detail from minimal completion. Chosen: separation. This supersedes the automatic-save/three-kind and memory-only-new-test restrictions of D14/D15/D17/D18, not the static hosting/privacy boundaries.
+- Data decision: read legacy v1 history without migration/rewrite; explicit new saves use separate strict v2, 20 per kind / 131072 characters. Legacy deletion remains explicit. Completion stores six kind-to-date entries only, no scores; import actual legacy achievements once and retain an empty marker after explicit reset. Detail deletion and completion reset are independent. No server, account, network or ranking is added.
+- Difficulty decision: color starts at level 8 in hard mode; reaction focus mode adds an optional textual wait cue and 1.6–6.5s variable delay while preserving early/held/spam rejection; hearing shuffles nine frequencies and offers two repetitions (18 trials) without raising gain or frequency; pitch hard starts at 15 cents; memory has unnumbered 5x5/4–11 forward and 6x6/6–13 reverse sequences, 650/450ms viewing plus 350ms gaps; temporal hard starts at 3 frames, minimum 1, both dots clear together. Practice modes remain available. Modes lock during a run; saved records carry conditions rather than implying comparable difficulty.
+- Rationale: visitors can understand the target skill and choose challenge without compulsory detailed storage or excessive sensory intensity. Offset-order cues no longer answer onset-order questions. Results are game observations, not diagnoses or calibrated sensory thresholds.
+- Affected: architecture, README, challenges/app/pitch/temporal, record-model/store, completion/history-view/progress, HTML/CSS, tests and browser verifier; WEB LAB metadata/count text/real preview updated separately.
+- Review: failing contract tests precede fixes; synthetic storage, actual browser input with muted audio, CI and public deployment are distinguished in the dated verification report. Actual auditory perception, physical display timing, assistive technology and atomic simultaneous writes are not certified. Old open tabs can still use old code until reloaded; the current app resynchronizes its minimal summary on reopening.
+
 ## D20 — Reject absent timing samples without changing stimulus / 2026-10-13
 
 - Context: systematic edge-test expansion is explicitly authorized for this owned app; parent handles release. New executable tests reproduced 2 Node boundary failures.

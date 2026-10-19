@@ -161,9 +161,9 @@ test("minimal progress read-modify-write preserves other apps and own removal af
   assert.equal(REPO_IDS.length, 15);
   assert.equal(new Set(REPO_IDS).size, 15);
   disk.setItem(PROGRESS_KEY, JSON.stringify({ version: 1, apps: { "packet-journey": { completed: 2, total: 7, updatedAt: date } } }));
-  assert.equal(writeProgress(provider, { completed: 1, total: 3, updatedAt: date }), true);
+  assert.equal(writeProgress(provider, { completed: 1, total: 6, updatedAt: date }), true);
   const progress = parseProgress(disk.getItem(PROGRESS_KEY));
-  assert.deepEqual(progress.apps["sense-lab"], { completed: 1, total: 3, updatedAt: date });
+  assert.deepEqual(progress.apps["sense-lab"], { completed: 1, total: 6, updatedAt: date });
   assert.deepEqual(progress.apps["packet-journey"], { completed: 2, total: 7, updatedAt: date });
   assert.equal(writeProgress(provider, null), true);
   assert.deepEqual(Object.keys(parseProgress(disk.getItem(PROGRESS_KEY)).apps), ["packet-journey"]);
@@ -173,7 +173,7 @@ test("minimal progress read-modify-write preserves other apps and own removal af
 });
 
 test("progress rejects expanded, unknown, out-of-bounds and unsupported data without overwriting it", () => {
-  const summary = { completed: 1, total: 3, updatedAt: date }, disk = storage();
+  const summary = { completed: 1, total: 6, updatedAt: date }, disk = storage();
   for (const bad of ["{", "null", "x".repeat(8193),
     JSON.stringify({ version: 2, apps: {} }), JSON.stringify({ version: 1, apps: { unknown: summary } }),
     '{"version":1,"apps":{"__proto__":{"completed":1,"total":3,"updatedAt":"2026-10-09T10:00:00.000Z"}}}',
@@ -185,7 +185,7 @@ test("progress rejects expanded, unknown, out-of-bounds and unsupported data wit
     assert.equal(disk.getItem(PROGRESS_KEY), bad);
   }
   disk.removeItem(PROGRESS_KEY);
-  for (const invalid of [{ ...summary, completed: -1 }, { ...summary, completed: 4 }, { ...summary, completed: 1.5 },
+  for (const invalid of [{ ...summary, completed: -1 }, { ...summary, completed: 7 }, { ...summary, completed: 1.5 },
     { ...summary, total: 1001 }, { ...summary, total: 2 }, { ...summary, updatedAt: "today" }, { ...summary, name: "user" }])
     assert.equal(writeProgress(() => disk, invalid), false);
   assert.equal(writeProgress(() => { throw new Error("blocked"); }, summary), false);

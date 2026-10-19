@@ -75,6 +75,8 @@ canvas:focus-visible {
   gap: 20px;
 }
 .wordmark {
+  white-space: nowrap;
+  flex-shrink: 0;
   text-decoration: none;
   font-size: clamp(1.8rem, 3vw, 3rem);
   font-weight: 950;
@@ -162,6 +164,8 @@ h2 {
   letter-spacing: -0.04em;
 }
 .big-index {
+  white-space: nowrap;
+  flex-shrink: 0;
   font-size: clamp(4rem, 7vw, 6rem);
   line-height: 1;
   color: var(--orange);
@@ -192,11 +196,12 @@ h2 {
 }
 .memory-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--memory-columns, 4), minmax(0, 1fr));
   gap: 8px;
   padding: 24px;
 }
 .memory-tile {
+  min-width: 0;
   min-height: 62px;
   border: 2px solid var(--line);
   border-radius: 4px;
@@ -755,10 +760,10 @@ footer {
 .temporal-answers button:not(:disabled):hover { background: var(--ink); color: #fff; }
 .score-sheet .temporal-consent { justify-content: start; align-items: start; font-weight: 500; }
 .temporal-consent input { flex: 0 0 20px; width: 20px; height: 20px; margin: 4px 0 0; accent-color: var(--ink); }
+.test-guide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 20px 0; margin-bottom: 24px; border-top: 1px solid #c9c9bd; border-bottom: 1px solid #c9c9bd; }
+.test-guide h2 { margin: 0 0 8px; font-size: .9rem; }
+.test-guide p { margin: 0; font-size: .875rem; line-height: 1.65; word-break: keep-all; overflow-wrap: anywhere; }
 @media (max-width: 850px) {
-  .header-links a:first-child {
-    display: none;
-  }
   .arena-layout {
     grid-template-columns: minmax(0, 1.7fr) minmax(225px, 1fr);
     gap: 20px;
@@ -785,6 +790,7 @@ footer {
   }
 }
 @media (max-width: 650px) {
+  .test-guide { grid-template-columns: 1fr; gap: 14px; padding: 16px 0; }
   .saved-run {
     flex-direction: column;
     gap: 8px;
@@ -801,9 +807,13 @@ footer {
   }
   .topbar {
     padding: 20px 5%;
+    flex-wrap: wrap;
+    gap: 12px;
   }
   .header-links {
     font-size: 0.875rem;
+    gap: 12px;
+    white-space: nowrap;
   }
   main {
     padding: 0 5%;
@@ -838,8 +848,8 @@ footer {
     min-height: max(260px, calc(var(--columns, 4) * 50px + 26px));
   }
   .memory-grid {
-    padding: 16px;
-    gap: 6px;
+    padding: 10px;
+    gap: 4px;
   }
   .memory-tile {
     min-height: 54px;
