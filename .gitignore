@@ -3,5 +3,6 @@ node_modules/
 .qa/
 .env
 output/playwright/
+.playwright-cli/
 .env.*
 *.log

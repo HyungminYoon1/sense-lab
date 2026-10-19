@@ -36,4 +36,9 @@ SENSE LAB과 WEB LAB의 해당 소개/완료 표시/미리보기만 변경한다
 
 ## 릴리스
 
-REMOTE_CI / LIVE: 아직 실행 전. 검증 후 기존 main/Pages 경로로 배포하며 원격 실행과 공개 파일/브라우저 결과를 별도로 기록한다.
+- REMOTE_CI: SENSE `b90f76305af604b659c30715ba68374d1c65d9b2`, [Actions 39242247494](https://github.com/HyungminYoon1/sense-lab/actions/runs/39242247494), verify/deploy SUCCESS. WEB LAB `4c5819aeb7cb330c9df1f659f5e4a97b1c8481e3`, [Actions 39242558920](https://github.com/HyungminYoon1/web-lab/actions/runs/39242558920), verify/deploy SUCCESS. 원격은 기존 Ubuntu 워크플로이며 Windows 검증은 위 로컬 결과다.
+- LIVE_FILES: SENSE 공개 19개 파일, WEB LAB 26개 파일 모두 HTTP 200 및 로컬 검증본과 바이트 일치. SENSE의 새 공개 화면을 1440×1000 실제 JPEG로 캡처해 갤러리에 반영했다.
+- LIVE_GALLERY: 25개 브라우저 흐름, 별도 저장 차단, JavaScript 비활성 42개 링크 PASS. 실제 공개 이미지 디코딩과 기존 3종/새 6종의 다른 탭 요약 갱신 포함. 다른 20개 카탈로그 객체·JPEG는 이전 HEAD와 동일하다.
+- LIVE_LAYOUT: 320/390px 줄바꿈과 기억 시작 위치 PASS. 별도 테스트 프로필만 사용했고 기존 방문자의 기록을 읽거나 삭제하지 않았다.
+- LIVE_SENSE: 공개 사이트에서 6종 심화 과제의 실제 종료 경로·선택 저장·새로고침·별도 WEB LAB 탭의 6/6·상세/완료 독립 삭제·1440/390/320px을 재실행하여 76개 검증 PASS, pageerror 0. 기존/손상/저장 차단은 격리한 FIXTURE 컨텍스트로 구분했다. 실제 Web Audio는 음소거했으며 사람의 청취 능력 검증이 아니다.
+- 최종 결과와 로컬 증거 제외 규칙만 후속 커밋한다. 검증한 dist 및 저장 정책은 변경하지 않는다. 증거는 `output/playwright/sense-20261019/{local,live}/`에 보관하며 공개 저장소에 올리지 않는다.
